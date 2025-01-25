@@ -98,7 +98,7 @@ public class BishopCalc {
                 moves.add(new ChessMove(myPosition, endP, null));
                 break;
             }
-            //System.out.println("added Chess move 5, 4 to " + cRow + ", " + cCol);
+            ////System.out.println("added Chess move 5, 4 to " + cRow + ", " + cCol);
 
 
 
