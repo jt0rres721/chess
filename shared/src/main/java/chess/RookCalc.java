@@ -8,7 +8,7 @@ public class RookCalc {
 
     public static Collection<ChessMove> run(ChessBoard myBoard, ChessPosition myPosition){
         Collection<ChessMove> moves = new ArrayList<>();
-        ChessGame.TeamColor color = myBoard.getPiece(myPosition).getTeamColor();
+        //ChessGame.TeamColor color = myBoard.getPiece(myPosition).getTeamColor();
 
         int cRow = myPosition.getRow();
         int cCol = myPosition.getColumn();
