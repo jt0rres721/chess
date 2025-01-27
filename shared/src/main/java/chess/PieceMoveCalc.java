@@ -20,6 +20,8 @@ public class PieceMoveCalc {
             return RookCalc.run(myBoard, myPosition);
         } else if (type == ChessPiece.PieceType.QUEEN){
             return QueenCalc.run(myBoard, myPosition);
+        } else if (type == ChessPiece.PieceType.KNIGHT) {
+            return KnightCalc.run(myBoard, myPosition);
         }
         throw new RuntimeException("Not implemented piece type");
     }
