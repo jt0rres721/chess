@@ -1,7 +1,7 @@
 package chess;
 
 import java.util.Collection;
-import java.util.Iterator;
+
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -69,12 +69,14 @@ public class ChessGame {
                                 ChessPosition endP = new ChessPosition(row + 1, col - 1);
                                 ChessMove newMove = new ChessMove(startPosition, endP, null);
                                 moves.add(newMove);
+                                System.out.println("Added en WHITE passant move " + endP.getRow() + ", " + endP.getColumn());
                             }
                         }else{
                             if (lastMove.getStartPosition().getRow() == 2){
                                 ChessPosition endP = new ChessPosition(row - 1, col - 1);
                                 ChessMove newMove = new ChessMove(startPosition, endP, null);
                                 moves.add(newMove);
+                                System.out.println("Added BLACK en passant move " + endP.getRow() + ", " + endP.getColumn());
                             }
                         }
                     }
@@ -91,12 +93,14 @@ public class ChessGame {
                                 ChessPosition endP = new ChessPosition(row + 1, col + 1);
                                 ChessMove newMove = new ChessMove(startPosition, endP, null);
                                 moves.add(newMove);
+                                System.out.println("Added WHITE en passant move " + endP.getRow() + ", " + endP.getColumn());
                             }
                         }else{
                             if (lastMove.getStartPosition().getRow() == 2){
                                 ChessPosition endP = new ChessPosition(row - 1, col + 1);
                                 ChessMove newMove = new ChessMove(startPosition, endP, null);
                                 moves.add(newMove);
+                                System.out.println("Added BLACKkkk en passant move " + endP.getRow() + ", " + endP.getColumn());
                             }
                         }
                     }
@@ -106,15 +110,7 @@ public class ChessGame {
         }
 
 
-        Iterator<ChessMove> iterator = moves.iterator();
-
-        while (iterator.hasNext()) {
-            ChessMove move = iterator.next();
-            if (!testMove(move)){
-                iterator.remove();
-            }
-
-        }
+        moves.removeIf(move -> !testMove(move));
 
 
         return moves;
@@ -144,11 +140,24 @@ public class ChessGame {
             piece = new ChessPiece(pieceColor, move.getPromotionPiece());
         }
 
-        Collection<ChessMove> moves = myBoard.getPiece(startPos).pieceMoves(myBoard, startPos);
+        Collection<ChessMove> moves = validMoves(startPos);
 
-        if (moves.contains(move) && testMove(move)){
+        if (moves.contains(move)){
+            /// En passant tweak
+            if (piece.getPieceType() == ChessPiece.PieceType.PAWN){
+                if(startPos.getColumn() != endPos.getColumn() && myBoard.getPiece(endPos) == null){
+                    ChessPosition target = new ChessPosition(startPos.getRow(), endPos.getColumn());
+                    myBoard.addPiece(target, null);
+                }
+            }
+
+
             myBoard.addPiece(startPos, null);
             myBoard.addPiece(endPos, piece);
+
+
+
+
 
             lastMove = move;
 
