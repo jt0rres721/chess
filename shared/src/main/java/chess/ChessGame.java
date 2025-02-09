@@ -12,6 +12,8 @@ import java.util.Iterator;
 public class ChessGame {
     private ChessBoard myBoard = new ChessBoard();
     private TeamColor teamTurn = TeamColor.WHITE;
+    private ChessMove lastMove;
+
     public ChessGame() {
         myBoard.resetBoard();
     }
@@ -49,6 +51,61 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         Collection<ChessMove> moves = myBoard.getPiece(startPosition).pieceMoves(myBoard,startPosition);
+        ChessPiece piece = myBoard.getPiece(startPosition);
+
+        if (piece.getPieceType() == ChessPiece.PieceType.PAWN){
+            int row = startPosition.getRow();
+            int col = startPosition.getColumn();
+            TeamColor color = piece.getTeamColor();
+
+            if (col > 1){
+                ChessPosition left = new ChessPosition(row, col - 1);
+                ChessPiece target = myBoard.getPiece(left);
+
+                if(target != null){
+                    if (target.getPieceType() == ChessPiece.PieceType.PAWN && target.getTeamColor() != color){
+                        if(color == TeamColor.WHITE){
+                            if (lastMove.getStartPosition().getRow() == 7){
+                                ChessPosition endP = new ChessPosition(row + 1, col - 1);
+                                ChessMove newMove = new ChessMove(startPosition, endP, null);
+                                moves.add(newMove);
+                            }
+                        }else{
+                            if (lastMove.getStartPosition().getRow() == 2){
+                                ChessPosition endP = new ChessPosition(row - 1, col - 1);
+                                ChessMove newMove = new ChessMove(startPosition, endP, null);
+                                moves.add(newMove);
+                            }
+                        }
+                    }
+                }
+            }
+            if (col < 8){
+                ChessPosition right = new ChessPosition(row, col + 1);
+                ChessPiece target = myBoard.getPiece(right);
+
+                if(target != null){
+                    if (target.getPieceType() == ChessPiece.PieceType.PAWN && target.getTeamColor() != color){
+                        if(color == TeamColor.WHITE){
+                            if (lastMove.getStartPosition().getRow() == 7){
+                                ChessPosition endP = new ChessPosition(row + 1, col + 1);
+                                ChessMove newMove = new ChessMove(startPosition, endP, null);
+                                moves.add(newMove);
+                            }
+                        }else{
+                            if (lastMove.getStartPosition().getRow() == 2){
+                                ChessPosition endP = new ChessPosition(row - 1, col + 1);
+                                ChessMove newMove = new ChessMove(startPosition, endP, null);
+                                moves.add(newMove);
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+
         Iterator<ChessMove> iterator = moves.iterator();
 
         while (iterator.hasNext()) {
@@ -93,6 +150,8 @@ public class ChessGame {
             myBoard.addPiece(startPos, null);
             myBoard.addPiece(endPos, piece);
 
+            lastMove = move;
+
             if(pieceColor == TeamColor.WHITE){
                 setTeamTurn(TeamColor.BLACK);
             } else {setTeamTurn(TeamColor.WHITE);}
@@ -117,8 +176,7 @@ public class ChessGame {
         myBoard.addPiece(startPos, null);
         myBoard.addPiece(endPos, piece);
 
-        boolean goodMove = true;
-        goodMove = !isInCheck(color);
+        boolean goodMove = !isInCheck(color);
 
 
         myBoard.addPiece(startPos, piece);
