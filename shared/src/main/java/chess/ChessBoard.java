@@ -2,6 +2,7 @@ package chess;
 
 //import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Objects;
 
 /**
@@ -38,6 +39,27 @@ public class ChessBoard {
     public ChessPiece getPiece(ChessPosition position) {
         return squares[position.getRow()-1][position.getColumn()-1];
     }
+
+
+
+    public ChessPosition findKing(ChessGame.TeamColor color){
+        for (int i = 0; i < 8; i++){
+            for (int j = 0; j<8; j++){
+                if (squares[i][j] != null){
+                    ChessPiece piece = squares[i][j];
+                    if (piece.getTeamColor() == color){
+                        if (piece.getPieceType() == ChessPiece.PieceType.KING){
+                            return new ChessPosition(i + 1, j + 1);
+                        }
+                    }
+                }
+            }
+        }
+        throw new RuntimeException("King not found...");
+    }
+
+
+
 
     /**
      * Sets the board to the default starting board
