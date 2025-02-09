@@ -180,8 +180,34 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        return isInCheck(teamColor);  ///TODO Actually implement
+        if(!isInCheck(teamColor)){
+            return false;
+        }
+
+        boolean escapable = false;
+
+
+        for (int i = 1; i < 9; i++){
+            for (int j = 1; j < 9; j++){
+                ChessPosition pos = new ChessPosition(i,j);
+                ChessPiece piece = myBoard.getPiece(pos);
+
+                if (piece != null){
+                    if (piece.getTeamColor() == teamColor){
+                        Collection<ChessMove> moves = validMoves(pos);
+
+                        if (!moves.isEmpty()){
+                            escapable = true;
+
+                        }
+
+                    }
+                }
+            }
+        }
+        return !escapable;
     }
+
 
     /**
      * Determines if the given team is in stalemate, which here is defined as having
@@ -191,7 +217,31 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        if(isInCheck(teamColor)){
+            return false;
+        }
+
+        boolean movable = false;
+
+        for (int i = 1; i < 9; i++){
+            for (int j = 1; j < 9; j++){
+                ChessPosition pos = new ChessPosition(i,j);
+                ChessPiece piece = myBoard.getPiece(pos);
+
+                if (piece != null){
+                    if (piece.getTeamColor() == teamColor){
+                        Collection<ChessMove> moves = validMoves(pos);
+
+                        if (!moves.isEmpty()){
+                            movable = true;
+
+                        }
+
+                    }
+                }
+            }
+        }
+        return !movable;
     }
 
     /**
