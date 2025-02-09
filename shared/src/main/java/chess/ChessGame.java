@@ -48,8 +48,6 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        TeamColor color = myBoard.getPiece(startPosition).getTeamColor();
-        //ChessPosition kingPos = findPosition(color, ChessPiece.PieceType.KING);
         Collection<ChessMove> moves = myBoard.getPiece(startPosition).pieceMoves(myBoard,startPosition);
         Iterator<ChessMove> iterator = moves.iterator();
 
@@ -120,9 +118,7 @@ public class ChessGame {
         myBoard.addPiece(endPos, piece);
 
         boolean goodMove = true;
-        if (isInCheck(color)){
-            goodMove = false;
-        }
+        goodMove = !isInCheck(color);
 
 
         myBoard.addPiece(startPos, piece);
@@ -155,20 +151,6 @@ public class ChessGame {
             }
         }
         return false;
-    }
-
-    public ChessPosition findPosition(TeamColor color, ChessPiece.PieceType type){
-        for (int i = 1; i < 9; i++){
-            for (int j = 1; j < 9; j++){
-                ChessPosition pos = new ChessPosition(i,j);
-                if (myBoard.getPiece(pos) != null){
-                    if (myBoard.getPiece(pos).getTeamColor() == color && myBoard.getPiece(pos).getPieceType() == type){
-                        return pos;
-                    }
-                }
-            }
-        }
-        throw new RuntimeException("Piece not found");
     }
 
 
