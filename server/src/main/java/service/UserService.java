@@ -1,18 +1,31 @@
 package service;
 
+import dataaccess.DataAccessException;
 import model.UserData;
 import server.RegisterResult;
-import server.RegisterRequest;
+//import server.RegisterRequest;
+import dataaccess.UserDAO;
 
 public class UserService {
-    public static RegisterResult register(RegisterRequest req){
+
+    private final UserDAO userData;
+
+    public UserService(UserDAO userData) {
+        this.userData = userData;
+    }
+
+    public RegisterResult register(String username, String password, String email) throws DataAccessException {
+        if (this.userData.getUser(username) == null ){
+            this.userData.addUser(username, password, email);
+        } else {throw new DataAccessException("Username already exists");}
+
 
 
         return new RegisterResult("testuser", "testtoken");
     }
 
     public UserData getUser(String username, String password){
-        return
+        return userData.getUser(username);
     }
 
 
