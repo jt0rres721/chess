@@ -1,5 +1,6 @@
 package service;
 
+import model.UserData;
 import server.RegisterResult;
 import server.RegisterRequest;
 
@@ -8,6 +9,10 @@ public class UserService {
 
 
         return new RegisterResult("testuser", "testtoken");
+    }
+
+    public UserData getUser(String username, String password){
+        return
     }
 
 
