@@ -13,4 +13,8 @@ public interface GameDAO {
     List<GameData> list();
 
     GameData getGame(int gameID);
+
+    GameData joinGame(int gameID, String playerColor, String username);
+
+    void deleteGame(int gameID);
 }

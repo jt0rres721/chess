@@ -24,6 +24,9 @@ public class UserService {
     }
 
     public RegisterResult register(String username, String password, String email) throws DataAccessException {
+        if(username.isEmpty() || password.isEmpty() || email.isEmpty()){
+            throw new DataAccessException("Error: bad request", 400);
+        }
         if (getUser(username) == null ){
             this.userDBase.addUser(username, password, email);
         } else {

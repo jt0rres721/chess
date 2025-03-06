@@ -257,6 +257,70 @@ public class ServiceTests {
 
     }
 
+    @Test
+    void joinPositive() throws DataAccessException {
+        GameData game = gameData.create("Game");
+        var storedUser = userService.register("bob", "ni", "email");
+        String token = storedUser.authToken();
+
+        GameData game1 = gameService.joinGame(token, game.gameID(), "BLACK");
+
+        assertNotNull(game1);
+        assertEquals(game.gameID(), game1.gameID());
+        assertEquals("bob", game1.blackUsername());
+        assertNull(game1.whiteUsername());
+
+    }
+
+    @Test
+    void joinNegative() throws DataAccessException {
+        GameData game = gameData.create("Game");
+        var storedUser = userService.register("bob", "ni", "email");
+        String token = storedUser.authToken();
+
+        //tests for bad request:
+        //bad gameID
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> {
+            gameService.joinGame(token, 500, "WHITE");
+        });
+
+        assertEquals("Error: bad request", exception.getMessage());
+        assertEquals(400, exception.StatusCode());
+
+        //bad playerColor
+        exception = assertThrows(DataAccessException.class, () -> {
+            gameService.joinGame(token, game.gameID(), "WHTE");
+        });
+
+        assertEquals("Error: bad request", exception.getMessage());
+        assertEquals(400, exception.StatusCode());
+
+
+        //Test for unauthorized request
+        exception = assertThrows(DataAccessException.class, () -> {
+            gameService.joinGame("invalid token", game.gameID(), "WHITE");
+        });
+
+        assertEquals("Error: unauthorized", exception.getMessage());
+        assertEquals(401, exception.StatusCode());
+
+
+
+        //Test for already taken username
+        gameData.joinGame(game.gameID(), "WHITE", "bobnemesis");
+        exception = assertThrows(DataAccessException.class, () -> {
+            gameService.joinGame(token, game.gameID(), "WHITE");
+        });
+
+        assertEquals("Error: already taken", exception.getMessage());
+        assertEquals(403, exception.StatusCode());
+
+        //Test for duplicate username in same game?
+
+
+
+    }
+
 
 
 

@@ -10,6 +10,7 @@ import server.ListResult2;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class GameService {
     private final GameDAO gameData;
@@ -56,6 +57,36 @@ public class GameService {
 
     public GameData getGame(int gameID){
         return gameData.getGame(gameID);
+    }
+
+    public GameData joinGame(String token, int gameID, String playerColor) throws DataAccessException{
+        if (gameID <= 0 || playerColor == null || playerColor.isEmpty() || (!playerColor.equals("WHITE") && !playerColor.equals("BLACK")) || gameData.getGame(gameID) == null) {
+            throw new DataAccessException("Error: bad request", 400);
+        }
+        if (authData.getToken(token) == null){
+            throw new DataAccessException("Error: unauthorized", 401);
+        }
+
+        if (playerColor.equals("WHITE")){
+            if (getGame(gameID).whiteUsername() != null){
+                throw new DataAccessException("Error: already taken", 403);
+            }
+        }
+        if (playerColor.equals("BLACK")){
+            if (getGame(gameID).blackUsername() != null){
+                throw new DataAccessException("Error: already taken", 403);
+            }
+        }
+
+        String username = authData.getToken(token).username();
+
+        /*if (Objects.equals(getGame(gameID).whiteUsername(), username) || Objects.equals(getGame(gameID).blackUsername(), username)){
+            throw new DataAccessException("Error: already taken", 403);
+        }*/
+
+        GameData result = gameData.joinGame(gameID, playerColor, username);
+
+        return result;
     }
 
 

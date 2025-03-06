@@ -34,4 +34,31 @@ public class MemoryGameDAO implements GameDAO{
     public GameData getGame(int gameID) {
         return games.get(gameID);
     }
+
+    @Override
+    public GameData joinGame(int gameID, String playerColor, String username) {
+        GameData game = games.get(gameID);
+
+        if (playerColor.equals("WHITE")){
+            GameData joinedGame = new GameData(gameID, username, game.blackUsername(),game.gameName(), game.game());
+            games.remove(gameID);
+            games.put(gameID, joinedGame);
+            game = joinedGame;
+        } else{
+            GameData joinedGame = new GameData(gameID, game.whiteUsername(), username ,game.gameName(), game.game());
+            games.remove(gameID);
+            games.put(gameID, joinedGame);
+            game = joinedGame;
+        }
+
+
+
+        return game;
+
+    }
+
+    @Override
+    public void deleteGame(int gameID) {
+        games.remove(gameID);
+    }
 }
