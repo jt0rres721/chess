@@ -95,6 +95,57 @@ public class RegisterTests {
 
     }
 
+    //positive logout test
+    @Test
+    void testLogout() throws DataAccessException {
+        this.userData.addUser("Jim", "pass", "email");
+
+        LoginResult result = userService.login("Jim", "pass");
+        assertNotNull(result);
+        assertEquals("Jim", result.username());
+        assertNotNull(result.authToken());
+
+        String token = result.authToken();
+
+        userService.logout(token);
+        assertNull(this.authData.getToken(token));
+
+    }
+
+
+    //negative logout test
+    @Test
+    void testLogoutNegative() throws DataAccessException{
+        this.userData.addUser("Jim", "pass", "email");
+
+        LoginResult result = userService.login("Jim", "pass");
+        assertNotNull(result);
+        assertEquals("Jim", result.username());
+        assertNotNull(result.authToken());
+
+        String token = result.authToken();
+
+        //logout wrong token
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> {
+            userService.logout("bilbobaggins");
+        });
+
+        assertEquals("Error: unauthorized", exception.getMessage());
+        assertEquals(401, exception.StatusCode());
+
+        //logout twice
+        userService.logout(token);
+        DataAccessException exception2 = assertThrows(DataAccessException.class, () -> {
+            userService.logout(token);
+        });
+
+        assertEquals("Error: unauthorized", exception2.getMessage());
+        assertEquals(401, exception2.StatusCode());
+
+
+
+    }
+
 
 
 

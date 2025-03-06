@@ -66,5 +66,13 @@ public class UserService {
         } else {throw new DataAccessException("Error: unauthorized", 401);}
     }
 
+    public void logout(String token) throws DataAccessException{
+        if (getToken(token) != null){
+            this.authDBase.deleteToken(token);
+        } else {
+            throw new DataAccessException("Error: unauthorized", 401);
+        }
+    }
+
 
 }
