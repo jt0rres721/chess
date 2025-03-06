@@ -4,9 +4,12 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import model.AuthData;
 import model.UserData;
+import server.LoginResult;
 import server.RegisterResult;
 //import server.RegisterRequest;
 import dataaccess.UserDAO;
+
+import javax.xml.crypto.Data;
 import java.util.UUID;
 
 
@@ -27,8 +30,7 @@ public class UserService {
             throw new DataAccessException("Error: already taken", 403);
         }
 
-        String token = generateToken();
-        this.authDBase.addToken(token, username);
+        String token = createAuth(username);
 
 
         return new RegisterResult(username, token);
@@ -44,6 +46,24 @@ public class UserService {
 
     public AuthData getToken(String token){
         return authDBase.getToken(token);
+    }
+
+    public String createAuth(String username){
+        String token = generateToken();
+        this.authDBase.addToken(token, username);
+        return token;
+    }
+
+    public LoginResult login(String username, String password) throws DataAccessException{
+        if (getUser(username) != null){
+            if(getUser(username).password() == password){
+                String token = createAuth(username);
+
+                return new LoginResult(username, token);
+
+
+            } else {throw new DataAccessException("Error: unauthorized ", 401);}
+        } else {throw new DataAccessException("Error: unauthorized ", 401);}
     }
 
 
