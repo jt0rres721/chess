@@ -56,14 +56,14 @@ public class UserService {
 
     public LoginResult login(String username, String password) throws DataAccessException{
         if (getUser(username) != null){
-            if(getUser(username).password() == password){
+            if(getUser(username).password().equals(password)){
                 String token = createAuth(username);
 
                 return new LoginResult(username, token);
 
 
-            } else {throw new DataAccessException("Error: unauthorized ", 401);}
-        } else {throw new DataAccessException("Error: unauthorized ", 401);}
+            } else {throw new DataAccessException("Error: unauthorized", 401);}
+        } else {throw new DataAccessException("Error: unauthorized", 401);}
     }
 
 

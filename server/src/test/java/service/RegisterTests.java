@@ -1,22 +1,27 @@
 package service;
 
-import dataaccess.DataAccessException;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryUserDAO;
+import dataaccess.*;
 import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import server.RegisterResult;
+import server.LoginResult;
+
+import javax.xml.crypto.Data;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class RegisterTests {
     private UserService userService;
+    private UserDAO userData;
+    private AuthDAO authData;
 
     @BeforeEach
     void setUp() {
-        userService = new UserService(new MemoryUserDAO(), new MemoryAuthDAO());
+        userData = new MemoryUserDAO();
+        authData = new MemoryAuthDAO();
+        userService = new UserService(userData, authData);
     }
 
     // Positive Test
@@ -46,10 +51,48 @@ public class RegisterTests {
         userService.register("Bob", "password123", "bob@example.com");
 
         DataAccessException exception = assertThrows(DataAccessException.class, () -> {
-            userService.register("Bob", "newPassword", "newbob@example.com"); // Attempt duplicate registration
+            userService.register("Bob", "newPassword", "newbob@example.com");
         });
 
-        assertEquals("Username already exists", exception.getMessage());
+        assertEquals("Error: already taken", exception.getMessage());
+        assertEquals(403, exception.StatusCode());
+    }
+
+
+    //positive login test
+    @Test
+    void testLogin() throws DataAccessException {
+        this.userData.addUser("Jim", "pass", "email");
+
+        LoginResult result = userService.login("Jim", "pass");
+        assertNotNull(result);
+        assertEquals("Jim", result.username());
+        assertNotNull(result.authToken());
+
+
+    }
+
+    // negative login test
+    @Test
+    void testLoginWrongPasswordAndUser() throws DataAccessException{
+        this.userData.addUser("Jim", "pass", "email");
+
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> {
+            userService.login("Bob", "newPassword");
+        });
+
+        assertEquals("Error: unauthorized", exception.getMessage());
+        assertEquals(401, exception.StatusCode());
+
+        DataAccessException exception2 = assertThrows(DataAccessException.class, () -> {
+            userService.login("Jim", "newPassword");
+        });
+
+        assertEquals("Error: unauthorized", exception2.getMessage());
+        assertEquals(401, exception2.StatusCode());
+
+
+
     }
 
 
