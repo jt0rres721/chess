@@ -2,9 +2,12 @@ package service;
 
 import dataaccess.*;
 import model.AuthData;
+import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import server.CreateResult;
+import server.ListResult;
 import server.RegisterResult;
 import server.LoginResult;
 
@@ -13,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ServiceTests {
     private UserService userService;
     private AppService appService;
+    private GameService gameService;
     private UserDAO userData;
     private AuthDAO authData;
     private GameDAO gameData;
@@ -24,6 +28,7 @@ public class ServiceTests {
         gameData = new MemoryGameDAO();
         userService = new UserService(userData, authData);
         appService = new AppService(gameData, authData, userData);
+        gameService = new GameService(gameData, authData);
     }
 
     // Positive Test
@@ -164,6 +169,51 @@ public class ServiceTests {
         appService.clear();
 
         assertEquals(0, userData.size());
+
+    }
+
+
+    @Test
+    void testCreateGame() throws DataAccessException {
+        RegisterResult result = userService.register("Alice", "securePass", "alice@example.com");
+        assertNotNull(result);
+        assertEquals("Alice", result.username());
+
+        String token = result.authToken();
+        CreateResult r = gameService.createGame(token, "GGame");
+
+        GameData storedGame = gameService.getGame(r.gameID());
+        assertNotNull(storedGame);
+        assertEquals("GGame", storedGame.gameName());
+        assertNull(storedGame.whiteUsername());
+        assertNull(storedGame.blackUsername());
+
+    }
+
+    @Test
+    void testCreateGameNegative() throws DataAccessException {
+        RegisterResult result = userService.register("Alice", "securePass", "alice@example.com");
+        assertNotNull(result);
+        assertEquals("Alice", result.username());
+
+        String token = result.authToken();
+
+
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> {
+            gameService.createGame(token, null);
+        });
+
+        assertEquals("Error: bad request", exception.getMessage());
+        assertEquals(400, exception.StatusCode());
+
+        DataAccessException exception2 = assertThrows(DataAccessException.class, () -> {
+            gameService.createGame("falseToken", "GGame");
+        });
+
+        assertEquals("Error: unauthorized", exception2.getMessage());
+        assertEquals(401, exception2.StatusCode());
+
+
 
     }
 
