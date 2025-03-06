@@ -23,7 +23,9 @@ public class UserService {
     public RegisterResult register(String username, String password, String email) throws DataAccessException {
         if (getUser(username) == null ){
             this.userDBase.addUser(username, password, email);
-        } else {throw new DataAccessException("Username already exists");}
+        } else {
+            throw new DataAccessException("Error: already taken", 403);
+        }
 
         String token = generateToken();
         this.authDBase.addToken(token, username);

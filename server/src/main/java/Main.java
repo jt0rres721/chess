@@ -11,7 +11,7 @@ public class Main {
         System.out.println("♕ 240 Chess Server: " + piece);
 
 
-        var userService = new UserService(new MemoryUserDAO(), new MemoryAuthDAO());
+        //var userService = new UserService(new MemoryUserDAO(), new MemoryAuthDAO());
 
         Server myServer = new Server();
 
