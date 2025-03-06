@@ -1,7 +1,9 @@
 package service;
 
 import dataaccess.DataAccessException;
+import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryUserDAO;
+import model.AuthData;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,20 +16,28 @@ public class RegisterTests {
 
     @BeforeEach
     void setUp() {
-        userService = new UserService(new MemoryUserDAO());
+        userService = new UserService(new MemoryUserDAO(), new MemoryAuthDAO());
     }
 
     // Positive Test
     @Test
     void testRegisterSuccess() throws DataAccessException {
-        userService.register("Alice", "securePass", "alice@example.com");
+        RegisterResult result = userService.register("Alice", "securePass", "alice@example.com");
+
+        assertNotNull(result);
+        assertEquals("Alice", result.username());
 
 
-        UserData storedUser = userService.getUser("Alice", "securePass");
+        UserData storedUser = userService.getUser("Alice");
         assertNotNull(storedUser);
         assertEquals("Alice", storedUser.username());
         assertEquals("securePass", storedUser.password());
         assertEquals("alice@example.com", storedUser.email());
+
+        AuthData storedAuth = userService.getToken(result.authToken());
+        assertEquals("Alice", storedAuth.username());
+
+
     }
 
     // Negative Test
@@ -41,4 +51,6 @@ public class RegisterTests {
 
         assertEquals("Username already exists", exception.getMessage());
     }
+
+
 }

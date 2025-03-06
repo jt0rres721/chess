@@ -17,4 +17,6 @@ public class MemoryUserDAO implements UserDAO{
         users.put(username, new UserData(username, password, email));
         System.out.println("Added new user: " + username + " " + email);
     }
+
+
 }
