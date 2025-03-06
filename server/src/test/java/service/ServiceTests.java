@@ -54,10 +54,11 @@ public class ServiceTests {
     void testRegisterDuplicateUsername() throws DataAccessException {
         userService.register("Bob", "password123", "bob@example.com");
 
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> userService.register("Bob", "newPassword", "newbob@example.com"));
+        DataAccessException exception = assertThrows(DataAccessException.class, () ->
+                userService.register("Bob", "newPassword", "newbob@example.com"));
 
         assertEquals("Error: already taken", exception.getMessage());
-        assertEquals(403, exception.StatusCode());
+        assertEquals(403, exception.statusCode());
     }
 
 
@@ -82,12 +83,12 @@ public class ServiceTests {
         DataAccessException exception = assertThrows(DataAccessException.class, () -> userService.login("Bob", "newPassword"));
 
         assertEquals("Error: unauthorized", exception.getMessage());
-        assertEquals(401, exception.StatusCode());
+        assertEquals(401, exception.statusCode());
 
         DataAccessException exception2 = assertThrows(DataAccessException.class, () -> userService.login("Jim", "newPassword"));
 
         assertEquals("Error: unauthorized", exception2.getMessage());
-        assertEquals(401, exception2.StatusCode());
+        assertEquals(401, exception2.statusCode());
 
 
 
@@ -127,14 +128,14 @@ public class ServiceTests {
         DataAccessException exception = assertThrows(DataAccessException.class, () -> userService.logout("bilbobaggins"));
 
         assertEquals("Error: unauthorized", exception.getMessage());
-        assertEquals(401, exception.StatusCode());
+        assertEquals(401, exception.statusCode());
 
         //logout twice
         userService.logout(token);
         DataAccessException exception2 = assertThrows(DataAccessException.class, () -> userService.logout(token));
 
         assertEquals("Error: unauthorized", exception2.getMessage());
-        assertEquals(401, exception2.StatusCode());
+        assertEquals(401, exception2.statusCode());
 
 
 
@@ -189,12 +190,12 @@ public class ServiceTests {
         DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.createGame(token, null));
 
         assertEquals("Error: bad request", exception.getMessage());
-        assertEquals(400, exception.StatusCode());
+        assertEquals(400, exception.statusCode());
 
         DataAccessException exception2 = assertThrows(DataAccessException.class, () -> gameService.createGame("falseToken", "GGame"));
 
         assertEquals("Error: unauthorized", exception2.getMessage());
-        assertEquals(401, exception2.StatusCode());
+        assertEquals(401, exception2.statusCode());
 
 
 
@@ -236,7 +237,7 @@ public class ServiceTests {
         DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.list("invalid token"));
 
         assertEquals("Error: unauthorized", exception.getMessage());
-        assertEquals(401, exception.StatusCode());
+        assertEquals(401, exception.statusCode());
 
 
     }
@@ -267,20 +268,20 @@ public class ServiceTests {
         DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.joinGame(token, 500, "WHITE"));
 
         assertEquals("Error: bad request", exception.getMessage());
-        assertEquals(400, exception.StatusCode());
+        assertEquals(400, exception.statusCode());
 
         //bad playerColor
         exception = assertThrows(DataAccessException.class, () -> gameService.joinGame(token, game.gameID(), "WHTE"));
 
         assertEquals("Error: bad request", exception.getMessage());
-        assertEquals(400, exception.StatusCode());
+        assertEquals(400, exception.statusCode());
 
 
         //Test for unauthorized request
         exception = assertThrows(DataAccessException.class, () -> gameService.joinGame("invalid token", game.gameID(), "WHITE"));
 
         assertEquals("Error: unauthorized", exception.getMessage());
-        assertEquals(401, exception.StatusCode());
+        assertEquals(401, exception.statusCode());
 
 
 
@@ -289,7 +290,7 @@ public class ServiceTests {
         exception = assertThrows(DataAccessException.class, () -> gameService.joinGame(token, game.gameID(), "WHITE"));
 
         assertEquals("Error: already taken", exception.getMessage());
-        assertEquals(403, exception.StatusCode());
+        assertEquals(403, exception.statusCode());
 
         //Test for duplicate username in same game?
 

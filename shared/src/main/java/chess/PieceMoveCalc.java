@@ -8,7 +8,7 @@ public class PieceMoveCalc {
 
     }
 
-    public static Collection<ChessMove> Calc(ChessBoard myBoard, ChessPosition myPosition){
+    public static Collection<ChessMove> calc(ChessBoard myBoard, ChessPosition myPosition){
         ChessPiece.PieceType type = myBoard.getPiece(myPosition).getPieceType();
         if (type == ChessPiece.PieceType.KING){
             return KingCalc.run(myBoard, myPosition);

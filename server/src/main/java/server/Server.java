@@ -28,14 +28,14 @@ public class Server {
         Spark.staticFiles.location("web");
 
         // Register your endpoints and handle exceptions here.
-        Spark.post("/user", this::Register);
-        Spark.post("/session", this::Login);
-        Spark.delete("/session", this::Logout);
-        Spark.get("/game", this::ListGames);
-        Spark.post("/game", this::CreateGame);
-        Spark.put("/game", this::JoinGame);
+        Spark.post("/user", this::register);
+        Spark.post("/session", this::login);
+        Spark.delete("/session", this::logout);
+        Spark.get("/game", this::listGames);
+        Spark.post("/game", this::createGame);
+        Spark.put("/game", this::joinGame);
 
-        Spark.delete("/db", this::Clear);
+        Spark.delete("/db", this::clear);
 
         Spark.exception(DataAccessException.class, this::exceptionHandler);
 
@@ -54,12 +54,12 @@ public class Server {
     }
 
     private void exceptionHandler(DataAccessException ex, Request req, Response res){
-        res.status(ex.StatusCode());
+        res.status(ex.statusCode());
         res.body(ex.toJson());
     }
 
 
-    private Object Register(Request req, Response res) throws DataAccessException {
+    private Object register(Request req, Response res) throws DataAccessException {
         var body = new Gson().fromJson(req.body(), RegisterRequest.class);
 
         if (body.username() == null || body.password() == null || body.email() == null){
@@ -72,7 +72,7 @@ public class Server {
         return new Gson().toJson(result);
     }
 
-    private Object Login(Request req, Response res) throws DataAccessException {
+    private Object login(Request req, Response res) throws DataAccessException {
         var body = new Gson().fromJson(req.body(), LoginRequest.class);
 
         if (body.username() == null || body.password() == null){
@@ -85,7 +85,7 @@ public class Server {
 
     }
 
-    private Object Logout(Request req, Response res) throws DataAccessException {
+    private Object logout(Request req, Response res) throws DataAccessException {
         String token = req.headers("Authorization");
 
         userService.logout(token);
@@ -93,13 +93,13 @@ public class Server {
         return new Gson().toJson(null);
     }
 
-    private Object Clear(Request req, Response res){
+    private Object clear(Request req, Response res){
         appService.clear();
 
         return new Gson().toJson(null);
     }
 
-    private Object ListGames(Request req, Response res) throws DataAccessException {
+    private Object listGames(Request req, Response res) throws DataAccessException {
         String token = req.headers("Authorization");
 
         ListResult result = gameService.list(token);
@@ -107,7 +107,7 @@ public class Server {
         return new Gson().toJson(result);
     }
 
-    private Object CreateGame(Request req, Response res) throws DataAccessException {
+    private Object createGame(Request req, Response res) throws DataAccessException {
         String token = req.headers("Authorization");
         var body = new Gson().fromJson(req.body(), CreateRequest.class);
 
@@ -117,7 +117,7 @@ public class Server {
         return new Gson().toJson(result);
     }
 
-    private Object JoinGame(Request req, Response res) throws DataAccessException {
+    private Object joinGame(Request req, Response res) throws DataAccessException {
         String token = req.headers("Authorization");
 
         JoinRequest body;

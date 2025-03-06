@@ -16,5 +16,4 @@ public interface GameDAO {
 
     GameData joinGame(int gameID, String playerColor, String username);
 
-    void deleteGame(int gameID);
 }

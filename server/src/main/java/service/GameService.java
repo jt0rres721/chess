@@ -52,7 +52,8 @@ public class GameService {
     }
 
     public GameData joinGame(String token, int gameID, String playerColor) throws DataAccessException{
-        if (gameID <= 0 || playerColor == null || playerColor.isEmpty() || (!playerColor.equals("WHITE") && !playerColor.equals("BLACK")) || gameData.getGame(gameID) == null) {
+        if (gameID <= 0 || playerColor == null || playerColor.isEmpty() || (!playerColor.equals("WHITE")
+                && !playerColor.equals("BLACK")) || gameData.getGame(gameID) == null) {
             throw new DataAccessException("Error: bad request", 400);
         }
         if (authData.getToken(token) == null){
@@ -72,9 +73,6 @@ public class GameService {
 
         String username = authData.getToken(token).username();
 
-        /*if (Objects.equals(getGame(gameID).whiteUsername(), username) || Objects.equals(getGame(gameID).blackUsername(), username)){
-            throw new DataAccessException("Error: already taken", 403);
-        }*/
 
 
         return gameData.joinGame(gameID, playerColor, username);
