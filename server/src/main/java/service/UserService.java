@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.DataAccessException;
+import dataaccess.MemoryUserDAO;
 import model.UserData;
 import server.RegisterResult;
 //import server.RegisterRequest;
@@ -19,7 +20,7 @@ public class UserService {
             this.userData.addUser(username, password, email);
         } else {throw new DataAccessException("Username already exists");}
 
-
+        //TODO continue here: implement tests and add the authtoken
 
         return new RegisterResult("testuser", "testtoken");
     }
