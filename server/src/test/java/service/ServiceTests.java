@@ -6,10 +6,7 @@ import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import server.CreateResult;
-import server.ListResult;
-import server.RegisterResult;
-import server.LoginResult;
+import server.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -213,6 +210,49 @@ public class ServiceTests {
         assertEquals("Error: unauthorized", exception2.getMessage());
         assertEquals(401, exception2.StatusCode());
 
+
+
+    }
+
+    @Test
+    void listAllGamesTestPositive() throws DataAccessException{
+        RegisterResult result = userService.register("Alice", "securePass", "alice@example.com");
+        assertNotNull(result);
+        assertEquals("Alice", result.username());
+
+        String token = result.authToken();
+        for (int i = 0 ; i< 5; i++){
+            gameService.createGame(token, "GGame");
+        }
+        ListResult r = gameService.list(token);
+
+
+        for (ListResult2 game : r.list()) {
+            assertNotNull(game);
+            assertEquals("GGame", game.gameName());
+            assertEquals("", game.whiteUsername());
+            assertEquals("", game.blackUsername());
+        }
+
+
+
+
+    }
+
+    @Test
+    void listAllGamesTestNegative() throws DataAccessException{
+        RegisterResult result = userService.register("Alice", "securePass", "alice@example.com");
+        assertNotNull(result);
+        assertEquals("Alice", result.username());
+
+        String token = result.authToken();
+
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> {
+            gameService.list("invalid token");
+        });
+
+        assertEquals("Error: unauthorized", exception.getMessage());
+        assertEquals(401, exception.StatusCode());
 
 
     }

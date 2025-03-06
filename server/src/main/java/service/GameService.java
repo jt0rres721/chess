@@ -6,7 +6,9 @@ import dataaccess.GameDAO;
 import model.GameData;
 import server.CreateResult;
 import server.ListResult;
+import server.ListResult2;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GameService {
@@ -24,7 +26,20 @@ public class GameService {
         } else {
             List<GameData> games = gameData.list();
 
-            return new ListResult(games);
+            ArrayList<ListResult2> gameList = new ArrayList<>();
+            for (GameData game : games){
+                String white = "";
+                if(game.whiteUsername() != null){
+                    white = game.whiteUsername();
+                }
+                String black = "";
+                if(game.blackUsername() != null){
+                    black = game.blackUsername();
+                }
+
+                gameList.add(new ListResult2(game.gameID(), white, black, game.gameName()));
+            }
+            return new ListResult(gameList);
         }
     }
 
