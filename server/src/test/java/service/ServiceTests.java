@@ -230,8 +230,8 @@ public class ServiceTests {
         for (ListResult2 game : r.list()) {
             assertNotNull(game);
             assertEquals("GGame", game.gameName());
-            assertEquals("", game.whiteUsername());
-            assertEquals("", game.blackUsername());
+            assertNull(game.whiteUsername());
+            assertNull(game.blackUsername());
         }
 
 

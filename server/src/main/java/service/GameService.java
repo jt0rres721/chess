@@ -29,16 +29,9 @@ public class GameService {
 
             ArrayList<ListResult2> gameList = new ArrayList<>();
             for (GameData game : games){
-                String white = "";
-                if(game.whiteUsername() != null){
-                    white = game.whiteUsername();
-                }
-                String black = "";
-                if(game.blackUsername() != null){
-                    black = game.blackUsername();
-                }
 
-                gameList.add(new ListResult2(game.gameID(), white, black, game.gameName()));
+
+                gameList.add(new ListResult2(game.gameID(), game.whiteUsername(), game.blackUsername(), game.gameName()));
             }
             return new ListResult(gameList);
         }

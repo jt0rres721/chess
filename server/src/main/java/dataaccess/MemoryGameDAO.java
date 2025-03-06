@@ -6,6 +6,7 @@ import model.GameData;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 public class MemoryGameDAO implements GameDAO{
     private final HashMap<Integer, GameData> games = new HashMap<>();
@@ -41,6 +42,9 @@ public class MemoryGameDAO implements GameDAO{
 
         if (playerColor.equals("WHITE")){
             GameData joinedGame = new GameData(gameID, username, game.blackUsername(),game.gameName(), game.game());
+            System.out.println("Joined as WHITE. The other username reads as ");
+            if(joinedGame.blackUsername() == null){System.out.println("NULL");}
+            if(Objects.equals(joinedGame.blackUsername(), "")){System.out.println("empty string");}
             games.remove(gameID);
             games.put(gameID, joinedGame);
             game = joinedGame;
