@@ -8,20 +8,22 @@ import org.junit.jupiter.api.Test;
 import server.RegisterResult;
 import server.LoginResult;
 
-import javax.xml.crypto.Data;
-
 import static org.junit.jupiter.api.Assertions.*;
 
-public class RegisterTests {
+public class ServiceTests {
     private UserService userService;
+    private AppService appService;
     private UserDAO userData;
     private AuthDAO authData;
+    private GameDAO gameData;
 
     @BeforeEach
     void setUp() {
         userData = new MemoryUserDAO();
         authData = new MemoryAuthDAO();
+        gameData = new MemoryGameDAO();
         userService = new UserService(userData, authData);
+        appService = new AppService(gameData, authData, userData);
     }
 
     // Positive Test
@@ -145,6 +147,28 @@ public class RegisterTests {
 
 
     }
+
+
+    //Positive clear tests
+    @Test
+    void testClearApp() throws DataAccessException {
+        userService.register("Alice", "securePass", "alice@example.com");
+        userService.register("Alce", "securePass", "alice@example.com");
+        userService.register("lice", "securePass", "alice@example.com");
+        userService.register("Alike", "securePass", "alice@example.com");
+        userService.register("Alie", "securePass", "alice@example.com");
+
+
+        assertEquals(5, userData.size());
+
+        appService.clear();
+
+        assertEquals(0, userData.size());
+
+    }
+
+
+
 
 
 

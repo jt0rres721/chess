@@ -22,7 +22,10 @@ public class MemoryAuthDAO implements AuthDAO{
         authTokens.remove(token);
     }
 
-
+    @Override
+    public void clear() {
+        authTokens.clear();
+    }
 
 
 }

@@ -18,5 +18,15 @@ public class MemoryUserDAO implements UserDAO{
 
     }
 
+    @Override
+    public void clear() {
+        users.clear();
+    }
+
+    @Override
+    public int size(){
+        return users.size();
+    }
+
 
 }

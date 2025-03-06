@@ -9,4 +9,6 @@ public interface AuthDAO {
 
     void deleteToken(String token);
 
+    void clear();
+
 }
