@@ -2,6 +2,8 @@ package dataaccess;
 
 import model.AuthData;
 
+import java.util.List;
+
 public interface AuthDAO {
     AuthData getToken (String token);
 
@@ -10,5 +12,7 @@ public interface AuthDAO {
     void deleteToken(String token);
 
     void clear();
+
+    List<String> users();
 
 }
