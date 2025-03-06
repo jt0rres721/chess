@@ -51,7 +51,7 @@ public class UserService {
         return authDBase.getToken(token);
     }
 
-    public String createAuth(String username) throws DataAccessException{
+    public String createAuth(String username) {//throws DataAccessException{
         String token = generateToken();
 
         //if (authDBase.users().contains(username)){throw new DataAccessException("Error: unauthorized", 401);}

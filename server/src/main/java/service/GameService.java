@@ -10,7 +10,6 @@ import server.ListResult2;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class GameService {
     private final GameDAO gameData;
@@ -77,9 +76,9 @@ public class GameService {
             throw new DataAccessException("Error: already taken", 403);
         }*/
 
-        GameData result = gameData.joinGame(gameID, playerColor, username);
 
-        return result;
+        return gameData.joinGame(gameID, playerColor, username);
+
     }
 
 

@@ -54,9 +54,7 @@ public class ServiceTests {
     void testRegisterDuplicateUsername() throws DataAccessException {
         userService.register("Bob", "password123", "bob@example.com");
 
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> {
-            userService.register("Bob", "newPassword", "newbob@example.com");
-        });
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> userService.register("Bob", "newPassword", "newbob@example.com"));
 
         assertEquals("Error: already taken", exception.getMessage());
         assertEquals(403, exception.StatusCode());
@@ -78,19 +76,15 @@ public class ServiceTests {
 
     // negative login test
     @Test
-    void testLoginWrongPasswordAndUser() throws DataAccessException{
+    void testLoginWrongPasswordAndUser() {
         this.userData.addUser("Jim", "pass", "email");
 
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> {
-            userService.login("Bob", "newPassword");
-        });
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> userService.login("Bob", "newPassword"));
 
         assertEquals("Error: unauthorized", exception.getMessage());
         assertEquals(401, exception.StatusCode());
 
-        DataAccessException exception2 = assertThrows(DataAccessException.class, () -> {
-            userService.login("Jim", "newPassword");
-        });
+        DataAccessException exception2 = assertThrows(DataAccessException.class, () -> userService.login("Jim", "newPassword"));
 
         assertEquals("Error: unauthorized", exception2.getMessage());
         assertEquals(401, exception2.StatusCode());
@@ -130,18 +124,14 @@ public class ServiceTests {
         String token = result.authToken();
 
         //logout wrong token
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> {
-            userService.logout("bilbobaggins");
-        });
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> userService.logout("bilbobaggins"));
 
         assertEquals("Error: unauthorized", exception.getMessage());
         assertEquals(401, exception.StatusCode());
 
         //logout twice
         userService.logout(token);
-        DataAccessException exception2 = assertThrows(DataAccessException.class, () -> {
-            userService.logout(token);
-        });
+        DataAccessException exception2 = assertThrows(DataAccessException.class, () -> userService.logout(token));
 
         assertEquals("Error: unauthorized", exception2.getMessage());
         assertEquals(401, exception2.StatusCode());
@@ -196,16 +186,12 @@ public class ServiceTests {
         String token = result.authToken();
 
 
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> {
-            gameService.createGame(token, null);
-        });
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.createGame(token, null));
 
         assertEquals("Error: bad request", exception.getMessage());
         assertEquals(400, exception.StatusCode());
 
-        DataAccessException exception2 = assertThrows(DataAccessException.class, () -> {
-            gameService.createGame("falseToken", "GGame");
-        });
+        DataAccessException exception2 = assertThrows(DataAccessException.class, () -> gameService.createGame("falseToken", "GGame"));
 
         assertEquals("Error: unauthorized", exception2.getMessage());
         assertEquals(401, exception2.StatusCode());
@@ -245,11 +231,9 @@ public class ServiceTests {
         assertNotNull(result);
         assertEquals("Alice", result.username());
 
-        String token = result.authToken();
 
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> {
-            gameService.list("invalid token");
-        });
+
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.list("invalid token"));
 
         assertEquals("Error: unauthorized", exception.getMessage());
         assertEquals(401, exception.StatusCode());
@@ -280,26 +264,20 @@ public class ServiceTests {
 
         //tests for bad request:
         //bad gameID
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> {
-            gameService.joinGame(token, 500, "WHITE");
-        });
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.joinGame(token, 500, "WHITE"));
 
         assertEquals("Error: bad request", exception.getMessage());
         assertEquals(400, exception.StatusCode());
 
         //bad playerColor
-        exception = assertThrows(DataAccessException.class, () -> {
-            gameService.joinGame(token, game.gameID(), "WHTE");
-        });
+        exception = assertThrows(DataAccessException.class, () -> gameService.joinGame(token, game.gameID(), "WHTE"));
 
         assertEquals("Error: bad request", exception.getMessage());
         assertEquals(400, exception.StatusCode());
 
 
         //Test for unauthorized request
-        exception = assertThrows(DataAccessException.class, () -> {
-            gameService.joinGame("invalid token", game.gameID(), "WHITE");
-        });
+        exception = assertThrows(DataAccessException.class, () -> gameService.joinGame("invalid token", game.gameID(), "WHITE"));
 
         assertEquals("Error: unauthorized", exception.getMessage());
         assertEquals(401, exception.StatusCode());
@@ -308,9 +286,7 @@ public class ServiceTests {
 
         //Test for already taken username
         gameData.joinGame(game.gameID(), "WHITE", "bobnemesis");
-        exception = assertThrows(DataAccessException.class, () -> {
-            gameService.joinGame(token, game.gameID(), "WHITE");
-        });
+        exception = assertThrows(DataAccessException.class, () -> gameService.joinGame(token, game.gameID(), "WHITE"));
 
         assertEquals("Error: already taken", exception.getMessage());
         assertEquals(403, exception.StatusCode());
