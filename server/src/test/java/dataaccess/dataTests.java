@@ -27,8 +27,10 @@ public class dataTests {
     }
 
     @Test
-    void configureDb() throws DataAccessException{
-        System.out.println("If your shi hasn't crashed ConfigureDatabase was successfull");
+    void configureDb() throws DataAccessException{ // TODO add AuthDAO and GameDAO and test again
+        System.out.println("No crashes, check out mysqlsh to see if initial values were set up alr");
     }
+
+
 
 }

@@ -14,6 +14,8 @@ public class SQLUserDAO implements UserDAO{
 
     @Override
     public UserData getUser(String username) {
+
+
         return null;
     }
 
@@ -34,14 +36,13 @@ public class SQLUserDAO implements UserDAO{
 
     private final String[] createStatements = {
         """
-                CREATE TABLE IF NOT EXISTS  pet (
-                              `id` int NOT NULL AUTO_INCREMENT,
-                              `name` varchar(256) NOT NULL,
-                              `type` ENUM('CAT', 'DOG', 'FISH', 'FROG', 'ROCK') DEFAULT 'CAT',
-                              `json` TEXT DEFAULT NULL,
-                              PRIMARY KEY (`id`),
-                              INDEX(type),
-                              INDEX(name)
+                CREATE TABLE IF NOT EXISTS  users (
+                              `username` varchar(256) NOT NULL,
+                              `password` varchar(256) NOT NULL,
+                              `email` varchar(256) NOT NULL,
+                              PRIMARY KEY (`username`),
+                              INDEX(username)
+                              INDEX(password)
                             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
                 """
     };
