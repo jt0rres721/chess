@@ -40,7 +40,6 @@ public class BishopCalc {
             cCol++;
             ChessPosition endP = new ChessPosition(cRow,cCol);
 
-            //System.out.println("Get piece at current target position says " + myBoard.getPiece(endP));
 
             if(myBoard.getPiece(endP) == null) {
                 moves.add(new ChessMove(myPosition, endP, null));
