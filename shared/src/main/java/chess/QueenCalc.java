@@ -4,11 +4,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class QueenCalc {
-    QueenCalc() {}
+    QueenCalc() {
+    }
 
 
-    public static Collection<ChessMove> run(ChessBoard myBoard, ChessPosition myPosition){
-        Collection<ChessMove> moves = new ArrayList<>();
+    public static Collection<ChessMove> run(ChessBoard myBoard, ChessPosition myPosition) {
+        int[][] directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+        return PieceMoveCalc.slidingPiece(myBoard, myPosition, directions);
+    }
+}
+        /*Collection<ChessMove> moves = new ArrayList<>();
         ChessGame.TeamColor color = myBoard.getPiece(myPosition).getTeamColor();
 
         int cRow = myPosition.getRow();
@@ -191,4 +196,4 @@ public class QueenCalc {
 
         return moves;
     }
-}
+}*/

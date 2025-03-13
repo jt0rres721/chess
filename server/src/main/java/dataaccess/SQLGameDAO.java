@@ -121,8 +121,12 @@ public class SQLGameDAO implements GameDAO{
                     var param = params[i];
                     if (param instanceof String p){
                         ps.setString(i+1, p);
-                    } else if (param instanceof Integer p) ps.setInt(i + 1, p);
-                    else if (param == null) ps.setNull(i + 1, NULL);
+                    } else if (param instanceof Integer p) {
+                        ps.setInt(i + 1, p);
+                    }
+                    else if (param == null) {
+                        ps.setNull(i + 1, NULL);
+                    }
                     else if (param instanceof ChessGame p){
                         ps.setString(i+1, p.toString());
                     }

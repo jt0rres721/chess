@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class PieceMoveCalc {
@@ -24,5 +25,33 @@ public class PieceMoveCalc {
             return KnightCalc.run(myBoard, myPosition);
         }
         throw new RuntimeException("Not implemented piece type");
+    }
+
+    public static Collection<ChessMove> slidingPiece (ChessBoard board, ChessPosition position, int[][] directions){
+        Collection<ChessMove> moves = new ArrayList<>();
+        ChessGame.TeamColor color = board.getPiece(position).getTeamColor();
+        for (int[] dir : directions) {
+            int cRow = position.getRow(), cCol = position.getColumn();
+            while (true) {
+                cRow += dir[0];
+                cCol += dir[1];
+                if (!isValidPosition(cRow, cCol)) break;
+                ChessPosition endPos = new ChessPosition(cRow, cCol);
+                ChessPiece piece = board.getPiece(endPos);
+                if (piece == null) {
+                    moves.add(new ChessMove(position, endPos, null));
+                } else {
+                    if (piece.getTeamColor() != color) {
+                        moves.add(new ChessMove(position, endPos, null));
+                    }
+                    break;
+                }
+            }
+        }
+        return moves;
+    }
+
+    private static boolean isValidPosition(int row, int col) {
+        return row >= 1 && row <= 8 && col >= 1 && col <= 8;
     }
 }
