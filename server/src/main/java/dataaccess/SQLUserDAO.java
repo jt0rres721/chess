@@ -3,6 +3,7 @@ package dataaccess;
 import com.google.gson.Gson;
 import model.UserData;
 import dataaccess.DatabaseManager;
+import org.mindrot.jbcrypt.BCrypt;
 
 
 import javax.xml.crypto.Data;
@@ -10,6 +11,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Objects;
+
 import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
 
@@ -42,7 +45,7 @@ public class SQLUserDAO implements UserDAO{
     @Override //TODO: add password hash thingy
     public void addUser(String username, String password, String email) throws DataAccessException{
         var statement = "INSERT INTO users (username, password, email, json) values(?, ?, ?, ?)";
-        var json = new Gson().toJson(new UserData(username, password, email));
+        var json = new Gson().toJson(new UserData(username, encryptPassword(password), email));
         executeUpdate(statement, username, password, email, json);
     }
 
@@ -50,6 +53,15 @@ public class SQLUserDAO implements UserDAO{
     public void clear() throws DataAccessException{
         var statement = "TRUNCATE users";
         executeUpdate(statement);
+    }
+
+    public String encryptPassword(String clearTextPassword) {
+        return BCrypt.hashpw(clearTextPassword, BCrypt.gensalt());
+    }
+
+    public boolean verifyUser(String username, String password) throws DataAccessException {
+        UserData user = getUser(username);
+        return BCrypt.checkpw(password, user.password());
     }
 
     private UserData readUser(ResultSet rs) throws SQLException {

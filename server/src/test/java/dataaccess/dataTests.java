@@ -7,6 +7,7 @@ import model.UserData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mindrot.jbcrypt.BCrypt;
 
 
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class dataTests {
         gameData.clear();
     }
 
+
     @Test
     void configureDb() throws DataAccessException{
         System.out.println("No crashes, check out mysqlsh to see if initial values were set up alr");
@@ -44,8 +46,8 @@ public class dataTests {
         userData.addUser("user1", "x", "x");
         UserData user = userData.getUser("user1");
         assertEquals("x", user.email());
-        assertEquals("x", user.password());
         assertEquals("user1", user.username());
+        assertTrue(userData.verifyUser(user.username(), "x"));
     }
 
     @Test
@@ -64,8 +66,8 @@ public class dataTests {
         UserData user = userData.getUser("user2221");
 
         assertEquals("user2221", user.username());
-        assertEquals("psasword", user.password());
         assertEquals("user.gmail", user.email());
+        assertTrue(userData.verifyUser(user.username(), "psasword"));
 
     }
 

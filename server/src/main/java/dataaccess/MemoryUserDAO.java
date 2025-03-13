@@ -23,8 +23,12 @@ public class MemoryUserDAO implements UserDAO{
         users.clear();
     }
 
-
-
+    @Override
+    public boolean verifyUser(String username, String password) throws DataAccessException {
+        if (users.get(username).password() == password){
+            return true;
+        }else {return false;}
+    }
 
 
 }

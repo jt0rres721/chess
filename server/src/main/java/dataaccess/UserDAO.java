@@ -9,6 +9,7 @@ public interface UserDAO {
 
     void clear() throws DataAccessException;
 
+    boolean verifyUser(String username, String password) throws DataAccessException;
 }
 
 
