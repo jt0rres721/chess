@@ -59,7 +59,6 @@ public class SQLUserDAO implements UserDAO{
     }
 
     private UserData readUser(ResultSet rs) throws SQLException {
-        var username = rs.getString("username");
         var json = rs.getString("json");
         return new Gson().fromJson(json, UserData.class);
     }
