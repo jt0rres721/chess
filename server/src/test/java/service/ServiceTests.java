@@ -77,7 +77,7 @@ public class ServiceTests {
 
     // negative login test
     @Test
-    void testLoginWrongPasswordAndUser() {
+    void testLoginWrongPasswordAndUser() throws DataAccessException {
         this.userData.addUser("Jim", "pass", "email");
 
         DataAccessException exception = assertThrows(DataAccessException.class, () -> userService.login("Bob", "newPassword"));

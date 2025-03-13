@@ -31,6 +31,17 @@ public class dataTests {
         System.out.println("No crashes, check out mysqlsh to see if initial values were set up alr");
     }
 
+    @Test
+    void getUserTestPositive(){
 
+    }
+
+
+    @Test
+    void addUserTestPositive() throws DataAccessException{
+        userData.addUser("gaylord", "psasword", "emailnigga");
+    }
+
+    //@Test addUserTestNegative() throws DataAccessException{}
 
 }

@@ -39,7 +39,7 @@ public class UserService {
         return new RegisterResult(username, token);
     }
 
-    public UserData getUser(String username){
+    public UserData getUser(String username) throws DataAccessException {
         return userDBase.getUser(username);
     }
 
