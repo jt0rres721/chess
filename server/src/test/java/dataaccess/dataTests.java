@@ -16,9 +16,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 public class dataTests {
-    private UserService userService;
-    private AppService appService;
-    private GameService gameService;
     private UserDAO userData;
     private AuthDAO authData;
     private GameDAO gameData;
@@ -26,17 +23,18 @@ public class dataTests {
     @BeforeEach
     void setUp() throws DataAccessException {
         userData = new SQLUserDAO();//new MemoryUserDAO();
-        authData = new MemoryAuthDAO();
+        authData = new SQLAuthDAO();
         gameData = new MemoryGameDAO();
     }
 
     @AfterEach
     void wrapUp() throws DataAccessException {
         userData.clear();
+        authData.clear();
     }
 
     @Test
-    void configureDb() throws DataAccessException{ // TODO add AuthDAO and GameDAO and test again
+    void configureDb() throws DataAccessException{ // TODO add GameDAO and test again
         System.out.println("No crashes, check out mysqlsh to see if initial values were set up alr");
     }
 
@@ -91,6 +89,75 @@ public class dataTests {
         assertNull(user);
     }
 
+
+    @Test
+    void addAuth() throws DataAccessException{
+        authData.addToken("ntokennax", "x");
+        AuthData auth = authData.getToken("ntokennax");
+
+        assertEquals("ntokennax", auth.authToken());
+
+    }
+
+    @Test
+    void addAuthNeg() throws DataAccessException{
+        //token is already existing
+        authData.addToken("ntokennax", "x");
+        AuthData auth = authData.getToken("ntokennax");
+
+        DataAccessException exception = assertThrows(DataAccessException.class, () ->
+                authData.addToken("ntokennax", "x"));
+
+        assertEquals("unable to update database: INSERT INTO auth (token, username, json) " +
+                "values(?, ?, ?), Duplicate entry 'ntokennax' for key 'auth.PRIMARY'", exception.getMessage());
+        assertEquals(500, exception.statusCode());
+    }
+
+
+    @Test
+    void clearAuth() throws DataAccessException{
+        authData.clear();
+    }
+
+    @Test
+    void deleteAuth() throws DataAccessException{
+        authData.addToken("yo", "x");
+        AuthData auth = authData.getToken("yo");
+
+        assertNotNull(auth);
+
+        authData.deleteToken("yo");
+
+        auth = authData.getToken("yo");
+
+        assertNull(auth);
+    }
+
+    @Test
+    void deleteAuthNegative() throws DataAccessException{
+        authData.addToken("yo", "x");
+        AuthData auth = authData.getToken("yo");
+        assertNotNull(auth);
+
+        authData.deleteToken("x");
+    }
+
+    @Test
+    void getAuthPos() throws DataAccessException {
+        authData.addToken("tok", "x");
+        AuthData auth = authData.getToken("tok");
+
+        assertEquals("tok", auth.authToken());
+    }
+
+
+    @Test
+    void getAuthNeg() throws DataAccessException{
+        authData.addToken("tok", "x");
+        AuthData auth = authData.getToken("tiktok");
+
+        assertNull(auth);
+    }
 }
 
 

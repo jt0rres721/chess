@@ -1,34 +1,30 @@
 package dataaccess;
 
 import com.google.gson.Gson;
-import model.UserData;
-import dataaccess.DatabaseManager;
+import model.AuthData;
 
 
-import javax.xml.crypto.Data;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
+
 import static java.sql.Types.NULL;
 
-
-public class SQLUserDAO implements UserDAO{
-
-    public SQLUserDAO() throws DataAccessException{
+public class SQLAuthDAO implements AuthDAO{
+    public SQLAuthDAO() throws DataAccessException {
         configureDatabase();
     }
 
     @Override
-    public UserData getUser(String username) throws DataAccessException{
+    public AuthData getToken(String token) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()){
-            var statement = "SELECT username, json FROM users WHERE username=?";
+            var statement = "SELECT token, username, json FROM auth WHERE token=?";
             try (var ps = conn.prepareStatement(statement)){
-                ps.setString(1, username);
+                ps.setString(1, token);
                 try (var rs = ps.executeQuery()){
                     if (rs.next()){
-                        return readUser(rs);
+                        return readToken(rs);
                     }
                 }
             }
@@ -39,23 +35,25 @@ public class SQLUserDAO implements UserDAO{
         return null;
     }
 
-    @Override //TODO: add password hash thingy
-    public void addUser(String username, String password, String email) throws DataAccessException{
-        var statement = "INSERT INTO users (username, password, email, json) values(?, ?, ?, ?)";
-        var json = new Gson().toJson(new UserData(username, password, email));
-        executeUpdate(statement, username, password, email, json);
+
+
+    @Override
+    public void addToken(String token, String username) throws DataAccessException {
+        var statement = "INSERT INTO auth (token, username, json) values(?, ?, ?)";
+        var json = new Gson().toJson(new AuthData(token, username));
+        executeUpdate(statement, token, username, json);
     }
 
     @Override
-    public void clear() throws DataAccessException{
-        var statement = "TRUNCATE users";
-        executeUpdate(statement);
+    public void deleteToken(String token) throws DataAccessException {
+        var statement = "DELETE FROM auth WHERE token=?";
+        executeUpdate(statement, token);
     }
 
-    private UserData readUser(ResultSet rs) throws SQLException {
-        var username = rs.getString("username");
-        var json = rs.getString("json");
-        return new Gson().fromJson(json, UserData.class);
+    @Override
+    public void clear() throws DataAccessException {
+        var statement = "TRUNCATE auth";
+        executeUpdate(statement);
     }
 
     private void executeUpdate(String statement, Object... params) throws DataAccessException{
@@ -76,15 +74,21 @@ public class SQLUserDAO implements UserDAO{
         }
     }
 
-    private final String[] createStatements = {
-        """
-                CREATE TABLE IF NOT EXISTS  users (
+    private AuthData readToken(ResultSet rs) throws SQLException {
+        var username = rs.getString("username");
+        var json = rs.getString("json");
+        return new Gson().fromJson(json, AuthData.class);
+    }
+
+
+    private final String[] createStatements = {  //TODO add foreign key line?
+            """
+                CREATE TABLE IF NOT EXISTS  auth (
+                              `token` varchar(256) NOT NULL,
                               `username` varchar(256) NOT NULL,
-                              `password` varchar(256) NOT NULL,
-                              `email` varchar(256) NOT NULL,
                               `json` TEXT DEFAULT NULL,
-                              PRIMARY KEY (`username`),
-                              INDEX(username)
+                              PRIMARY KEY (`token`),
+                              INDEX(token)
                             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
                 """
     };
@@ -97,7 +101,6 @@ public class SQLUserDAO implements UserDAO{
                     preparedStatement.executeUpdate();
                 }
             }
-
         }catch (SQLException ex){
             throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()),500);
         }

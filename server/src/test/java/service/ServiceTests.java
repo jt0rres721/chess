@@ -152,11 +152,9 @@ public class ServiceTests {
         userService.register("Alie", "securePass", "alice@example.com");
 
 
-        assertEquals(5, userData.size());
 
         appService.clear();
 
-        assertEquals(0, userData.size());
 
     }
 

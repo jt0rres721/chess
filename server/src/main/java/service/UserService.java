@@ -47,11 +47,11 @@ public class UserService {
         return UUID.randomUUID().toString();
     }
 
-    public AuthData getToken(String token){
+    public AuthData getToken(String token) throws DataAccessException {
         return authDBase.getToken(token);
     }
 
-    public String createAuth(String username) {//throws DataAccessException{
+    public String createAuth(String username) throws DataAccessException {//throws DataAccessException{
         String token = generateToken();
 
         //if (authDBase.users().contains(username)){throw new DataAccessException("Error: unauthorized", 401);}
