@@ -93,7 +93,7 @@ public class Server {
         return new Gson().toJson(null);
     }
 
-    private Object clear(Request req, Response res){
+    private Object clear(Request req, Response res) throws DataAccessException {
         appService.clear();
 
         return new Gson().toJson(null);

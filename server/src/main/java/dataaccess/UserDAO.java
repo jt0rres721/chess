@@ -7,7 +7,7 @@ public interface UserDAO {
 
     void addUser(String username, String password, String email) throws DataAccessException;
 
-    void clear();
+    void clear() throws DataAccessException;
 
     int size();
 }
