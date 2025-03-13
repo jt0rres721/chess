@@ -23,10 +23,8 @@ public class MemoryUserDAO implements UserDAO{
         users.clear();
     }
 
-    @Override
-    public int size(){
-        return users.size();
-    }
+
+
 
 
 }

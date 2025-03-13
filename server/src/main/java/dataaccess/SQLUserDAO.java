@@ -52,11 +52,6 @@ public class SQLUserDAO implements UserDAO{
         executeUpdate(statement);
     }
 
-    @Override
-    public int size() {
-        return 0;
-    }
-
     private UserData readUser(ResultSet rs) throws SQLException {
         var username = rs.getString("username");
         var json = rs.getString("json");
@@ -74,8 +69,6 @@ public class SQLUserDAO implements UserDAO{
                     else if (param == null) ps.setNull(i + 1, NULL);
                 }
                 ps.executeUpdate();
-
-                //var rs = ps.getGeneratedKeys();
 
             }
         } catch (SQLException e){
