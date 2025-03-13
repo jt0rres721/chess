@@ -7,7 +7,6 @@ import model.UserData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mindrot.jbcrypt.BCrypt;
 
 
 import java.util.ArrayList;
@@ -16,7 +15,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class dataTests {
+public class DataTests {
     private UserDAO userData;
     private AuthDAO authData;
     private GameDAO gameData;
@@ -37,7 +36,7 @@ public class dataTests {
 
 
     @Test
-    void configureDb() throws DataAccessException{
+    void configureDb(){
         System.out.println("No crashes, check out mysqlsh to see if initial values were set up alr");
     }
 
@@ -106,7 +105,6 @@ public class dataTests {
     void addAuthNeg() throws DataAccessException{
         //token is already existing
         authData.addToken("ntokennax", "x");
-        AuthData auth = authData.getToken("ntokennax");
 
         DataAccessException exception = assertThrows(DataAccessException.class, () ->
                 authData.addToken("ntokennax", "x"));
@@ -249,7 +247,7 @@ public class dataTests {
     @Test
     void joinGamePos() throws DataAccessException{
         GameData game = gameData.create("gaming");
-        assertEquals(null, game.whiteUsername());
+        assertNull(game.whiteUsername());
         assertEquals(1, game.gameID());
 
         GameData game2 = gameData.joinGame(1, "WHITE", "JOE");
@@ -261,7 +259,7 @@ public class dataTests {
     @Test
     void joinGameNeg() throws DataAccessException{
         GameData game = gameData.create("gaming");
-        assertEquals(null, game.whiteUsername());
+        assertNull(game.whiteUsername());
         assertEquals(1, game.gameID());
 
         //Wrong color

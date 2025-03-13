@@ -3,7 +3,6 @@ package dataaccess;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import model.GameData;
-import model.UserData;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -142,7 +141,6 @@ public class SQLGameDAO implements GameDAO{
     }
 
     private GameData readGame(ResultSet rs) throws SQLException {
-        var id = rs.getInt("gameid");//TODO change to ID
         var json = rs.getString("json");
         return new Gson().fromJson(json, GameData.class);
     }

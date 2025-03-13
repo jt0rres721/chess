@@ -2,6 +2,7 @@ package dataaccess;
 
 import model.UserData;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class MemoryUserDAO implements UserDAO{
     final private HashMap<String, UserData> users = new HashMap<>();
@@ -24,10 +25,8 @@ public class MemoryUserDAO implements UserDAO{
     }
 
     @Override
-    public boolean verifyUser(String username, String password) throws DataAccessException {
-        if (users.get(username).password() == password){
-            return true;
-        }else {return false;}
+    public boolean verifyUser(String username, String password){
+        return Objects.equals(users.get(username).password(), password);
     }
 
 

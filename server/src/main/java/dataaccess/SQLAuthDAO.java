@@ -3,8 +3,6 @@ package dataaccess;
 import com.google.gson.Gson;
 import model.AuthData;
 
-
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -75,13 +73,12 @@ public class SQLAuthDAO implements AuthDAO{
     }
 
     private AuthData readToken(ResultSet rs) throws SQLException {
-        var username = rs.getString("username");
         var json = rs.getString("json");
         return new Gson().fromJson(json, AuthData.class);
     }
 
 
-    private final String[] createStatements = {  //TODO add foreign key line?
+    private final String[] createStatements = {
             """
                 CREATE TABLE IF NOT EXISTS  auth (
                               `token` varchar(256) NOT NULL,

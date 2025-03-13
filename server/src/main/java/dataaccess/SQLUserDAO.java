@@ -2,18 +2,11 @@ package dataaccess;
 
 import com.google.gson.Gson;
 import model.UserData;
-import dataaccess.DatabaseManager;
 import org.mindrot.jbcrypt.BCrypt;
 
-
-import javax.xml.crypto.Data;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Objects;
-
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
 import static java.sql.Types.NULL;
 
 
