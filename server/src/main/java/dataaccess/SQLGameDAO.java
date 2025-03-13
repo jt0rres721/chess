@@ -92,7 +92,7 @@ public class SQLGameDAO implements GameDAO{
 
             var statement2 = "UPDATE games SET json = ? WHERE gameID = ?";
             var json = new Gson().toJson(new GameData(gameID, username,
-                    null,game1.gameName(), game1.game() ));
+                    game1.blackUsername(),game1.gameName(), game1.game() ));
             executeUpdate(statement2, json, gameID);
 
             return getGame(gameID);
@@ -105,7 +105,7 @@ public class SQLGameDAO implements GameDAO{
             GameData game1 = getGame(gameID);
 
             var statement2 = "UPDATE games SET json = ? WHERE gameID = ?";
-            var json = new Gson().toJson(new GameData(gameID, null,
+            var json = new Gson().toJson(new GameData(gameID, game1.whiteUsername(),
                     username,game1.gameName(), game1.game() ));
             executeUpdate(statement2, json, gameID);
 
