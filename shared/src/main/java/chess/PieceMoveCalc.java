@@ -51,7 +51,7 @@ public class PieceMoveCalc {
         return moves;
     }
 
-    private static boolean isValidPosition(int row, int col) {
+    public static boolean isValidPosition(int row, int col) {
         return row >= 1 && row <= 8 && col >= 1 && col <= 8;
     }
 }
