@@ -1,16 +1,16 @@
 package dataaccess;
 
-import dataaccess.*;
+import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import server.*;
-import service.AppService;
-import service.GameService;
-import service.UserService;
+
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,17 +24,18 @@ public class dataTests {
     void setUp() throws DataAccessException {
         userData = new SQLUserDAO();//new MemoryUserDAO();
         authData = new SQLAuthDAO();
-        gameData = new MemoryGameDAO();
+        gameData = new SQLGameDAO();
     }
 
     @AfterEach
     void wrapUp() throws DataAccessException {
         userData.clear();
         authData.clear();
+        gameData.clear();
     }
 
     @Test
-    void configureDb() throws DataAccessException{ // TODO add GameDAO and test again
+    void configureDb() throws DataAccessException{
         System.out.println("No crashes, check out mysqlsh to see if initial values were set up alr");
     }
 
@@ -158,6 +159,98 @@ public class dataTests {
 
         assertNull(auth);
     }
+
+    @Test
+    void createGamePos() throws DataAccessException{
+        GameData game1 = gameData.create("NewMoon");
+        GameData game2 = gameData.create("NewMoon2");
+        GameData game3 = gameData.create("NewMoon3");
+
+        assertEquals("NewMoon", game1.gameName());
+        assertEquals("NewMoon2", game2.gameName());
+        assertEquals("NewMoon3", game3.gameName());
+
+        assertNull(game1.whiteUsername());
+        assertNull(game1.blackUsername());
+
+    }
+
+    @Test //Same name tests
+    void createGameNeg() throws DataAccessException{
+        GameData game1 = gameData.create("NewMoon");
+        GameData game2 = gameData.create("NewMoon");
+        GameData game3 = gameData.create("NewMoon");
+
+        assertEquals(1,game1.gameID());
+        assertEquals("NewMoon", game1.gameName());
+        assertEquals(2, game2.gameID());
+        assertEquals("NewMoon", game2.gameName());
+        assertEquals(3, game3.gameID());
+        assertEquals("NewMoon", game3.gameName());
+    }
+
+    @Test
+    void clearGames() throws DataAccessException{
+        gameData.create("NewMoon");
+        gameData.create("NewMoon2");
+        gameData.create("NewMoon3");
+        gameData.clear();
+    }
+
+    @Test
+    void getGamePos() throws DataAccessException{
+        gameData.create("NewMoon");
+        gameData.create("NewMoon2");
+
+        GameData game = gameData.getGame(1);
+        assertEquals(1, game.gameID());
+        assertNull(game.whiteUsername());
+        assertEquals("NewMoon", game.gameName());
+
+    }
+
+    @Test
+    void getGameNeg() throws DataAccessException{
+        gameData.create("NewMoon");
+        gameData.create("NewMoon2");
+
+        GameData game = gameData.getGame(15);
+        assertNull(game);
+
+    }
+
+    @Test
+    void gameList() throws DataAccessException{
+        ArrayList<GameData> games = new ArrayList<>();
+        for (int i = 0; i < 5; i++){
+            GameData game = gameData.create("Game" + (i+1));
+            games.add(game);
+        }
+        List<GameData> gamelist = gameData.list();
+
+        for (int i = 0; i < 5; i++){
+            assertEquals(games.get(i).gameID(), gamelist.get(i).gameID());
+            assertEquals(games.get(i).gameName(), gamelist.get(i).gameName());
+            assertEquals(new Gson().toJson(games.get(i).game()), new Gson().toJson(gamelist.get(i).game()));
+        }
+
+    }
+
+    @Test
+    void emptyGameList() throws DataAccessException{
+        List<GameData> gamelist = gameData.list();
+
+        assertTrue(gamelist.isEmpty());
+
+    }
+
+    @Test
+    void joinGamePos() throws DataAccessException{}
+
+    @Test
+    void joinGameNeg() throws DataAccessException{}
+
+
 }
 
 

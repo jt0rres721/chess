@@ -47,7 +47,7 @@ public class GameService {
         }
     }
 
-    public GameData getGame(int gameID){
+    public GameData getGame(int gameID) throws DataAccessException {
         return gameData.getGame(gameID);
     }
 
