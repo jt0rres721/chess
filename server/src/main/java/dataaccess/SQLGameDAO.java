@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static java.sql.Types.NULL;
 
@@ -29,7 +30,7 @@ public class SQLGameDAO implements GameDAO{
         var json = new Gson().toJson(new GameData(id, null, null, gameName, game));
         executeUpdate(statement2, json, id);
 
-        return new GameData(id, null, null, gameName, game);
+        return getGame(id);
     }
 
     @Override
@@ -82,7 +83,35 @@ public class SQLGameDAO implements GameDAO{
     }
 
     @Override
-    public GameData joinGame(int gameID, String playerColor, String username) {
+    public GameData joinGame(int gameID, String playerColor, String username) throws DataAccessException {
+        var statement = "";
+        if(Objects.equals(playerColor, "WHITE")&& getGame(gameID)!= null){
+            statement = "UPDATE games SET whiteUsername = ? WHERE gameID = ?";
+            executeUpdate(statement, username, gameID);
+
+            GameData game1 = getGame(gameID);
+
+            var statement2 = "UPDATE games SET json = ? WHERE gameID = ?";
+            var json = new Gson().toJson(new GameData(gameID, username,
+                    null,game1.gameName(), game1.game() ));
+            executeUpdate(statement2, json, gameID);
+
+            return getGame(gameID);
+
+        }
+        else if(Objects.equals(playerColor, "BLACK")&& getGame(gameID)!= null){
+            statement = "UPDATE games SET blackUsername = ? WHERE gameID = ?";
+            executeUpdate(statement, username, gameID);
+
+            GameData game1 = getGame(gameID);
+
+            var statement2 = "UPDATE games SET json = ? WHERE gameID = ?";
+            var json = new Gson().toJson(new GameData(gameID, null,
+                    username,game1.gameName(), game1.game() ));
+            executeUpdate(statement2, json, gameID);
+
+            return getGame(gameID);
+        }
         return null;
     }
 

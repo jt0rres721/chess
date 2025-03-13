@@ -245,10 +245,31 @@ public class dataTests {
     }
 
     @Test
-    void joinGamePos() throws DataAccessException{}
+    void joinGamePos() throws DataAccessException{
+        GameData game = gameData.create("gaming");
+        assertEquals(null, game.whiteUsername());
+        assertEquals(1, game.gameID());
+
+        GameData game2 = gameData.joinGame(1, "WHITE", "JOE");
+        assertEquals("JOE", game2.whiteUsername());
+        assertEquals(game.gameID(), game2.gameID());
+
+    }
 
     @Test
-    void joinGameNeg() throws DataAccessException{}
+    void joinGameNeg() throws DataAccessException{
+        GameData game = gameData.create("gaming");
+        assertEquals(null, game.whiteUsername());
+        assertEquals(1, game.gameID());
+
+        //Wrong color
+        GameData game2 = gameData.joinGame(1, "BROWN", "JOE");
+        assertNull(game2);
+
+        //Non-existing game
+        GameData game3 = gameData.joinGame(15, "WHITE", "JOE");
+        assertNull(game3);
+    }
 
 
 }
