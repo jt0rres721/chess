@@ -44,9 +44,10 @@ public class SQLUserDAO implements UserDAO{
 
     @Override //TODO: add password hash thingy
     public void addUser(String username, String password, String email) throws DataAccessException{
+        String hashpass = encryptPassword(password);
         var statement = "INSERT INTO users (username, password, email, json) values(?, ?, ?, ?)";
-        var json = new Gson().toJson(new UserData(username, encryptPassword(password), email));
-        executeUpdate(statement, username, password, email, json);
+        var json = new Gson().toJson(new UserData(username, hashpass, email));
+        executeUpdate(statement, username, hashpass, email, json);
     }
 
     @Override

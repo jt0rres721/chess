@@ -13,9 +13,24 @@ public class Server {
     private final GameService gameService;
 
     public Server() {
-        UserDAO userData = new MemoryUserDAO();
-        AuthDAO authData = new MemoryAuthDAO();
-        GameDAO gameData = new MemoryGameDAO();
+        UserDAO userData = null;
+        try {
+            userData = new SQLUserDAO();
+        } catch (DataAccessException e) {
+            System.out.println("UserData exception caught");
+        }
+        AuthDAO authData = null;
+        try {
+            authData = new SQLAuthDAO();
+        } catch (DataAccessException e) {
+            System.out.println("AuthData exception caught");
+        }
+        GameDAO gameData = null;
+        try {
+            gameData = new SQLGameDAO();
+        } catch (DataAccessException e) {
+            System.out.println("GameData exception caught");
+        }
 
         this.userService = new UserService(userData, authData);
         this.appService = new AppService(gameData, authData, userData);

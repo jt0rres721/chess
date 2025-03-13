@@ -61,7 +61,7 @@ public class UserService {
 
     public LoginResult login(String username, String password) throws DataAccessException{
         if (getUser(username) != null){
-            if(getUser(username).password().equals(password)){
+            if(userDBase.verifyUser(username, password)){
                 String token = createAuth(username);
 
                 return new LoginResult(username, token);
