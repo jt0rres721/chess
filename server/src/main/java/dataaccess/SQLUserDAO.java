@@ -6,10 +6,8 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import static dataaccess.DatabaseManager.executeUpdate;
-import static java.sql.Types.NULL;
 
 
 public class SQLUserDAO implements UserDAO{
