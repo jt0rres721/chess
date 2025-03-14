@@ -11,6 +11,17 @@ import static dataaccess.DatabaseManager.executeUpdate;
 
 public class SQLAuthDAO implements AuthDAO{
     public SQLAuthDAO() throws DataAccessException {
+        String[] createStatements = {
+                """
+                CREATE TABLE IF NOT EXISTS  auth (
+                              `token` varchar(256) NOT NULL,
+                              `username` varchar(256) NOT NULL,
+                              `json` TEXT DEFAULT NULL,
+                              PRIMARY KEY (`token`),
+                              INDEX(token)
+                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+                """
+        };
         configureDatabase(createStatements);
     }
 
@@ -60,19 +71,6 @@ public class SQLAuthDAO implements AuthDAO{
         var json = rs.getString("json");
         return new Gson().fromJson(json, AuthData.class);
     }
-
-
-    private final String[] createStatements = {
-            """
-                CREATE TABLE IF NOT EXISTS  auth (
-                              `token` varchar(256) NOT NULL,
-                              `username` varchar(256) NOT NULL,
-                              `json` TEXT DEFAULT NULL,
-                              PRIMARY KEY (`token`),
-                              INDEX(token)
-                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-                """
-    };
 
 
 }

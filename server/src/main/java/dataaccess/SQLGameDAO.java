@@ -17,6 +17,20 @@ import static dataaccess.DatabaseManager.configureDatabase;
 
 public class SQLGameDAO implements GameDAO{
     public SQLGameDAO() throws DataAccessException {
+        String[] createStatements = {
+                """
+                CREATE TABLE IF NOT EXISTS  games (
+                              `gameID` int NOT NULL AUTO_INCREMENT,
+                              `whiteUsername` varchar(256),
+                              `blackUsername` varchar(256),
+                              `gameName` varchar(256) NOT NULL,
+                              `game` TEXT DEFAULT NULL,
+                              `json` TEXT DEFAULT NULL,
+                              PRIMARY KEY (`gameID`),
+                              INDEX(gameName)
+                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+                """
+        };
         configureDatabase(createStatements);
     }
 
@@ -150,21 +164,6 @@ public class SQLGameDAO implements GameDAO{
         var json = rs.getString("json");
         return new Gson().fromJson(json, GameData.class);
     }
-
-    private final String[] createStatements = {
-            """
-                CREATE TABLE IF NOT EXISTS  games (
-                              `gameID` int NOT NULL AUTO_INCREMENT,
-                              `whiteUsername` varchar(256),
-                              `blackUsername` varchar(256),
-                              `gameName` varchar(256) NOT NULL,
-                              `game` TEXT DEFAULT NULL,
-                              `json` TEXT DEFAULT NULL,
-                              PRIMARY KEY (`gameID`),
-                              INDEX(gameName)
-                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-                """
-    };
 
 
 }
