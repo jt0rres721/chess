@@ -17,7 +17,9 @@ public class KingCalc {
 
         for (int rowOffset : rowOffsets) {
             for (int colOffset : colOffsets) {
-                if (rowOffset == 0 && colOffset == 0) continue;
+                if (rowOffset == 0 && colOffset == 0) {
+                    continue;
+                }
 
                 int newRow = cRow + rowOffset;
                 int newCol = cCol + colOffset;

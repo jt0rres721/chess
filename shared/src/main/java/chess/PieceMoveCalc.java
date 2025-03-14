@@ -35,7 +35,9 @@ public class PieceMoveCalc {
             while (true) {
                 cRow += dir[0];
                 cCol += dir[1];
-                if (!isValidPosition(cRow, cCol)) break;
+                if (!isValidPosition(cRow, cCol)) {
+                    break;
+                }
                 ChessPosition endPos = new ChessPosition(cRow, cCol);
                 ChessPiece piece = board.getPiece(endPos);
                 if (piece == null) {

@@ -45,9 +45,15 @@ public class ChessGame {
     }
 
     private void validateMove(ChessMove move, ChessPiece piece) throws InvalidMoveException {
-        if (piece == null) throw new InvalidMoveException("No such piece at initial move position");
-        if (piece.getTeamColor() != getTeamTurn()) throw new InvalidMoveException("Invalid move wrong team turn");
-        if (!validMoves(move.getStartPosition()).contains(move)) throw new InvalidMoveException("Illegal move");
+        if (piece == null){
+            throw new InvalidMoveException("No such piece at initial move position");
+        }
+        if (piece.getTeamColor() != getTeamTurn()){
+            throw new InvalidMoveException("Invalid move wrong team turn");
+        }
+        if (!validMoves(move.getStartPosition()).contains(move)){
+            throw new InvalidMoveException("Illegal move");
+        }
     }
 
     private void executeMove(ChessMove move, ChessPiece piece) {
@@ -113,12 +119,12 @@ public class ChessGame {
             for (int j = 1; j <= 8; j++) {
                 ChessPosition pos = new ChessPosition(i, j);
                 ChessPiece piece = myBoard.getPiece(pos);
-                if (piece != null && piece.getTeamColor() != teamColor) {
-                    Collection<ChessMove> moves = piece.pieceMoves(myBoard, pos);
-                    for (ChessMove move : moves) {
-                        if (move.getEndPosition().equals(position)) {
-                            return true;
-                        }
+                if (piece == null || piece.getTeamColor() == teamColor) {
+                    continue;
+                }
+                for (ChessMove move : piece.pieceMoves(myBoard, pos)) {
+                    if (move.getEndPosition().equals(position)) {
+                        return true;
                     }
                 }
             }
