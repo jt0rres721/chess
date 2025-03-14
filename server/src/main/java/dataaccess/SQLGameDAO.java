@@ -12,10 +12,12 @@ import java.util.List;
 import java.util.Objects;
 
 import static java.sql.Types.NULL;
+import static dataaccess.DatabaseManager.configureDatabase;
+
 
 public class SQLGameDAO implements GameDAO{
     public SQLGameDAO() throws DataAccessException {
-        configureDb();
+        configureDatabase(createStatements);
     }
 
     @Override
@@ -164,17 +166,5 @@ public class SQLGameDAO implements GameDAO{
                 """
     };
 
-    private void configureDb() throws DataAccessException{
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()){
-            for (var statement : createStatements){
-                try (var preparedStatement = conn.prepareStatement(statement)){
-                    preparedStatement.executeUpdate();
-                }
-            }
 
-        }catch (SQLException ex){
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()),500);
-        }
-    }
 }

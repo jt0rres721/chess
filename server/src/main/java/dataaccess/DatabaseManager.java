@@ -93,4 +93,20 @@ public class DatabaseManager {
             throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()), 500);
         }
     }
+
+    static void configureDatabase(String[] createStatements) throws DataAccessException {
+        DatabaseManager.createDatabase();
+        try (var conn = DatabaseManager.getConnection()){
+            for (var statement : createStatements){
+                try (var preparedStatement = conn.prepareStatement(statement)){
+                    preparedStatement.executeUpdate();
+                }
+            }
+
+        }catch (SQLException ex){
+            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()),500);
+        }
+    }
+
+
 }

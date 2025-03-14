@@ -7,13 +7,14 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import static dataaccess.DatabaseManager.configureDatabase;
 import static dataaccess.DatabaseManager.executeUpdate;
 
 
 public class SQLUserDAO implements UserDAO{
 
     public SQLUserDAO() throws DataAccessException{
-        configureDatabase();
+        configureDatabase(createStatements);
     }
 
     @Override
@@ -78,17 +79,5 @@ public class SQLUserDAO implements UserDAO{
                 """
     };
 
-    void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (var conn = DatabaseManager.getConnection()){
-            for (var statement : createStatements){
-                try (var preparedStatement = conn.prepareStatement(statement)){
-                    preparedStatement.executeUpdate();
-                }
-            }
 
-        }catch (SQLException ex){
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()),500);
-        }
-    }
 }
