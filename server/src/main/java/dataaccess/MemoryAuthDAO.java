@@ -29,6 +29,10 @@ public class MemoryAuthDAO implements AuthDAO{
         authTokens.clear();
     }
 
+    @Override
+    public AuthData getUser(String user) throws DataAccessException {
+        return null;
+    }
 
 
 }

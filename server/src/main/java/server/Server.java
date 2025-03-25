@@ -1,6 +1,7 @@
 package server;
 
 import dataaccess.*;
+import model.*;
 import service.AppService;
 import service.GameService;
 import spark.*;

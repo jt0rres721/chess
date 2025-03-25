@@ -4,9 +4,9 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import model.GameData;
-import server.CreateResult;
-import server.ListResult;
-import server.ListResult2;
+import model.CreateResult;
+import model.ListResult;
+import model.ListResult2;
 
 import java.util.ArrayList;
 import java.util.List;
