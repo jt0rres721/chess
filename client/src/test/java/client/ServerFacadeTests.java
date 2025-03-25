@@ -120,11 +120,32 @@ public class ServerFacadeTests {
         RegisterRequest request = new RegisterRequest("mario", "x", "x@x");
         var user = facade.register(request);
 
-        //TODO create games here once you implement the function
+        facade.createGame(new CreateRequest("Game1"), user.authToken());
+        facade.createGame(new CreateRequest("Game2"), user.authToken());
+        facade.createGame(new CreateRequest("Game3"), user.authToken());
 
         var games = facade.listGames(user.authToken());
 
         assertEquals("Game1", games.list().getFirst().gameName());
+        assertEquals(1, games.list().getFirst().gameID());
+        assertEquals("Game2", games.list().get(1).gameName());
+        assertEquals(2, games.list().get(1).gameID());
+        assertEquals("Game3", games.list().get(2).gameName());
+        assertEquals(3, games.list().get(2).gameID());
+
+    }
+
+    @Test
+    public void gameListNeg() throws DataAccessException{
+        RegisterRequest request = new RegisterRequest("mario", "x", "x@x");
+        var user = facade.register(request);
+
+        facade.createGame(new CreateRequest("Game1"), user.authToken());
+        facade.createGame(new CreateRequest("Game2"), user.authToken());
+        facade.createGame(new CreateRequest("Game3"), user.authToken());
+
+
+
     }
 
     @Test
@@ -136,7 +157,7 @@ public class ServerFacadeTests {
 
         var game = facade.createGame(gameRequest, user.authToken());
 
-        assertEquals("Gameni", game.gameName());
+        assertEquals(1, game.gameID());
     }
 
     @Test
