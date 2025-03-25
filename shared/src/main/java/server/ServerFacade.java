@@ -47,6 +47,12 @@ public class ServerFacade {
         return makeRequest("POST", path, create, CreateResult.class, token);
     }
 
+    public void joinGame(JoinRequest request, String token)throws DataAccessException{
+        var path = "/game";
+
+        makeRequest("PUT", path, request, null, token);
+    }
+
     public void clear() throws DataAccessException {
         var path = "/db";
         makeRequest("DELETE", path, null, null, null);

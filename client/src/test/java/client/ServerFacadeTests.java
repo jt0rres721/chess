@@ -163,6 +163,38 @@ public class ServerFacadeTests {
     }
 
     @Test
+    public void createGameNeg() throws DataAccessException{
+        RegisterRequest request = new RegisterRequest("mario", "x", "x@x");
+        var user = facade.register(request);
+
+        DataAccessException ex  =assertThrows(DataAccessException.class, () -> facade.logout("invalidToken"));
+
+        assertEquals("Error: unauthorized", ex.getMessage());
+        assertEquals(401, ex.statusCode());
+
+    }
+
+
+    @Test
+    public void joinGame() throws DataAccessException{
+        RegisterRequest request = new RegisterRequest("mario", "x", "x@x");
+        var user = facade.register(request);
+
+        CreateRequest gameRequest = new CreateRequest("GameF");
+        var game = facade.createGame(gameRequest, user.authToken());
+
+        JoinRequest join = new JoinRequest("WHITE", 1);
+
+        facade.joinGame(join, user.authToken());
+
+        var games = facade.listGames(user.authToken());
+
+        assertEquals("GameF", games.list().getFirst().gameName());
+        assertEquals("mario", games.list().getFirst().whiteUsername());
+        assertNull(games.list().getFirst().blackUsername());
+    }
+
+    @Test
     public void clearTest() throws DataAccessException{
         RegisterRequest request = new RegisterRequest("luigi", "defund", "depose@gmail");
         facade.register(request);
