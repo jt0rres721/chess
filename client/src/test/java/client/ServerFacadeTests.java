@@ -144,8 +144,10 @@ public class ServerFacadeTests {
         facade.createGame(new CreateRequest("Game2"), user.authToken());
         facade.createGame(new CreateRequest("Game3"), user.authToken());
 
+        DataAccessException ex  =assertThrows(DataAccessException.class, () -> facade.logout("invalidToken"));
 
-
+        assertEquals("Error: unauthorized", ex.getMessage());
+        assertEquals(401, ex.statusCode());
     }
 
     @Test
