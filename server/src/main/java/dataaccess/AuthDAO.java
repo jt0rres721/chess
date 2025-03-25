@@ -13,6 +13,6 @@ public interface AuthDAO {
 
     void clear() throws DataAccessException;
 
-
+    AuthData getUser (String user) throws DataAccessException;
 
 }

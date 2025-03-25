@@ -65,6 +65,24 @@ public class SQLAuthDAO implements AuthDAO{
         executeUpdate(statement);
     }
 
+    @Override
+    public AuthData getUser(String user) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()){
+            var statement = "SELECT token, username, json FROM auth WHERE username=?";
+            try (var ps = conn.prepareStatement(statement)){
+                ps.setString(1, user);
+                try (var rs = ps.executeQuery()){
+                    if (rs.next()){
+                        return readToken(rs);
+                    }
+                }
+            }
+        } catch (Exception e){
+            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()), 500);
+        }
+
+        return null;
+    }
 
 
     private AuthData readToken(ResultSet rs) throws SQLException {

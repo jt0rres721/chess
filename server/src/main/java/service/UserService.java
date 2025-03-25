@@ -4,9 +4,9 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import model.AuthData;
 import model.UserData;
-import server.LoginResult;
-import server.RegisterResult;
-//import server.RegisterRequest;
+import model.LoginResult;
+import model.RegisterResult;
+//import model.RegisterRequest;
 import dataaccess.UserDAO;
 
 //import javax.xml.crypto.Data;
