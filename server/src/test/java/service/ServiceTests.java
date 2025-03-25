@@ -1,12 +1,9 @@
 package service;
 
 import dataaccess.*;
-import model.AuthData;
-import model.GameData;
-import model.UserData;
+import model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import server.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -206,7 +203,7 @@ public class ServiceTests {
         assertEquals("Alice", result.username());
 
         String token = result.authToken();
-        for (int i = 0 ; i< 5; i++){
+        for (int i = 0 ; i < 5; i++){
             gameService.createGame(token, "GGame");
         }
         ListResult r = gameService.list(token);
