@@ -1,6 +1,8 @@
 package ui;
 
 import dataaccess.DataAccessException;
+import model.CreateRequest;
+import model.JoinRequest;
 import model.LoginRequest;
 import model.RegisterRequest;
 import server.ServerFacade;
@@ -45,6 +47,10 @@ public class Client {
 
     public String helpIn() {
         return "HelpIn";
+    }
+
+    public String helpG() {
+        return "HelpG";
     }
 
     public String state(){
@@ -97,7 +103,10 @@ public class Client {
     }
 
     private String gamingClient(String cmd, String... params) throws DataAccessException{
-        return "in gaming";
+        return switch (cmd) {
+            case "quit" -> "quit";
+            default -> helpG();
+        };
     }
 
     private String logout(String... params) throws DataAccessException {
@@ -109,20 +118,35 @@ public class Client {
 
     }
 
-    private String create(String... params){
-        return null;
+    private String create(String... params) throws DataAccessException {
+        if (params.length >= 1){
+            CreateRequest create = new CreateRequest(params[0]);
+            var game = server.createGame(create, authToken);
+
+            return String.format("Created game called %s", params[0]);
+        } throw new DataAccessException("Error: Bad request", 400);
     }
 
-    private String list(){
-        return null;
+    private String list() throws DataAccessException {
+        var games = server.listGames(authToken);
+
+        return games.toString(); // TODO: make it so it returns a nice list, according to project description
     }
 
-    private String join(String... params){
-        return null;
+    private String join(String... params) throws DataAccessException {
+        if (params.length >= 2){
+            JoinRequest join = new JoinRequest(params[1].toUpperCase(), Integer.parseInt(params[0]));
+            server.joinGame(join, authToken);
+            state = State.GAMING;
+
+            return "Joined game";
+        } throw new DataAccessException("Error: Bad request", 400);
     }
 
-    private String observe(String... params){
-        return null;
+    private String observe(String... params) throws DataAccessException {
+        if (params.length >= 1){
+            return "Weird request not yet implememnted"; //TODO implememnt this shi
+        } throw new DataAccessException("Error: Bad request", 400);
     }
 
 
