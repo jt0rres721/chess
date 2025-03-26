@@ -1,14 +1,12 @@
 package ui;
 
 import dataaccess.DataAccessException;
-import model.CreateRequest;
-import model.JoinRequest;
-import model.LoginRequest;
-import model.RegisterRequest;
+import model.*;
 import server.ServerFacade;
 
 import javax.xml.crypto.Data;
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class Client {
     private String authToken = "";
@@ -16,6 +14,7 @@ public class Client {
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
     private Repl repl;
+    private HashMap<Integer, ListResult2> games = new HashMap<>();
 
 
     public Client(String serverUrl, Repl repl){
@@ -158,14 +157,38 @@ public class Client {
     }
 
     private String list() throws DataAccessException {
-        var games = server.listGames(authToken);
+        games.clear();
+        var result = server.listGames(authToken);
+        var gameList = result.games();
 
-        return games.toString(); // TODO: make it so it returns a nice list, according to project description
+        StringBuilder output = new StringBuilder();
+
+        if (gameList.isEmpty()){
+            return "No open games \n";
+        } else {
+
+            for (int i = 1; i <= result.list().size(); i++) {
+                games.put(i, gameList.get(i - 1));
+                String white = (games.get(i).whiteUsername() != null) ? games.get(i).whiteUsername() : "";
+                String black = (games.get(i).blackUsername() != null) ? games.get(i).blackUsername() : "";
+                output.append(String.format("%d: Name: %s, White: %s, Black: %s \n", i, games.get(i).gameName(),
+                        white, black));
+            }
+        }
+
+        return output.toString();
     }
 
     private String join(String... params) throws DataAccessException {
         if (params.length >= 2){
-            JoinRequest join = new JoinRequest(params[1].toUpperCase(), Integer.parseInt(params[0]));
+            int id = 0;
+            try{
+                id = Integer.parseInt(params[0]);
+            } catch (Exception e){
+                throw new DataAccessException("Error: Bad request", 400);
+            }
+
+            JoinRequest join = new JoinRequest(params[1].toUpperCase(), games.get(id).gameID());
             server.joinGame(join, authToken);
             state = State.GAMING;
 
