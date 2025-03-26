@@ -21,7 +21,7 @@ public class Repl {
         Scanner scanner = new Scanner(System.in);
         var result = "";
 
-        while (!result.equals("quit") ||!result.equals("q")){
+        while (!result.equals("quit")){
             printPrompt();
             String line = scanner.nextLine();
 
@@ -38,7 +38,7 @@ public class Repl {
     }
 
     private void printPrompt(){
-        System.out.println("\n" + RESET + client.state() +" >>> " + SET_TEXT_COLOR_GREEN);
+        System.out.println("\n" + RESET +"[" +client.state()+"]" +" >>> " + SET_TEXT_COLOR_GREEN);
     }
 
 

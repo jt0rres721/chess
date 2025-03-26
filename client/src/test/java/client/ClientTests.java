@@ -33,6 +33,7 @@ public class ClientTests {
     @AfterEach
     public void reset() throws DataAccessException {
         facade.clear();
+        client.setState(State.SIGNEDOUT);
     }
 
     @Test
@@ -47,7 +48,7 @@ public class ClientTests {
 
     @Test
     public void registerNeg(){
-        String input = "register joe jigga";
+        String input = "register joe jia";
         String result = client.eval(input);
 
         assertEquals("Error: Bad request", result);
