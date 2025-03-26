@@ -1,6 +1,7 @@
 package ui;
 
 import dataaccess.DataAccessException;
+import model.LoginRequest;
 import model.RegisterRequest;
 import server.ServerFacade;
 
@@ -54,13 +55,18 @@ public class Client {
             state = State.SIGNEDIN;
 
             return String.format("Registered as %s.", user.username());
-        } throw new DataAccessException("Bad Request", 400);
+        } throw new DataAccessException("Error: Bad request", 400);
     }
 
     private String login(String... params) throws DataAccessException{
+        if (params.length == 2){
+            LoginRequest login = new LoginRequest(params[0], params[1]);
+            var user = server.login(login);
 
+            state = State.SIGNEDIN;
 
-        return null;
+            return String.format("Logged in as %s.", user.username());
+        } throw new DataAccessException("Error: Bad request", 400);
     }
 
 }
