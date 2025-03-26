@@ -42,11 +42,33 @@ public class Client {
     }
 
     public String help(){ //TODO Implement
-        return "You ran help my nigga.";
+        return String.format("""
+                %s- register <USERNAME> <PASSWORD> <EMAIL> %s - to create an account
+                %s- login <USERNAME> <PASSWORD> %s - to play chess
+                %s- quit %s - to end session
+                %s- help %s - to display possible commands
+                """, EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
+                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
+                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
+                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA);
     }
 
     public String helpIn() {
-        return "HelpIn";
+        return String.format("""
+                %s- create <NAME> %s - to create a game
+                %s- list %s - to list all games
+                %s- join <ID> [WHITE|BLACK] %s - to join a game
+                %s- observe <ID> %s -  to observe a game
+                %s- logout %s - when you are done
+                %s- quit %s - to end session
+                %s- help %s - to display possible commands
+                """, EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
+                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
+                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
+                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
+                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
+                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
+                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA);
     }
 
     public String helpG() {
@@ -92,12 +114,12 @@ public class Client {
 
     private String signedInClient(String cmd, String... params) throws DataAccessException{
         return switch (cmd) {
-            case "logout" -> logout(params);
+            case "logout" -> logout();
             case "create" -> create(params);
             case "list" -> list();
             case "join" -> join(params);
             case "observe" -> observe(params);
-            case "quit" -> "quit";
+            case "quit" -> logoutAndQuit();
             default -> helpIn();
         };
     }
@@ -109,13 +131,21 @@ public class Client {
         };
     }
 
-    private String logout(String... params) throws DataAccessException {
+    private String logout() throws DataAccessException {
         server.logout(authToken);
         authToken = "";
         state = State.SIGNEDOUT;
 
         return "Logged out";
 
+    }
+
+    private String logoutAndQuit() throws DataAccessException{
+        server.logout(authToken);
+        authToken = "";
+        state = State.SIGNEDOUT;
+
+        return "quit";
     }
 
     private String create(String... params) throws DataAccessException {

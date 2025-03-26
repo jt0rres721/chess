@@ -38,7 +38,7 @@ public class Repl {
     }
 
     private void printPrompt(){
-        System.out.println("\n" + RESET +"[" +client.state()+"]" +" >>> " + SET_TEXT_COLOR_GREEN);
+        System.out.println("\n" + RESET_TEXT_COLOR +"[" +client.state()+"]" +" >>> " + SET_TEXT_COLOR_GREEN);
     }
 
 
