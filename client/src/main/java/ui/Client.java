@@ -9,7 +9,7 @@ import javax.xml.crypto.Data;
 import java.util.Arrays;
 
 public class Client {
-    private String visitorName = null;
+    private String authToken = "";
     private final ServerFacade server;
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
@@ -55,6 +55,7 @@ public class Client {
         if (params.length >= 3){
             RegisterRequest register = new RegisterRequest(params[0], params[1], params[2]);
             var user = server.register(register);
+            authToken = user.authToken();
 
             state = State.SIGNEDIN;
 
@@ -66,6 +67,7 @@ public class Client {
         if (params.length >= 2){
             LoginRequest login = new LoginRequest(params[0], params[1]);
             var user = server.login(login);
+            authToken = user.authToken();
 
             state = State.SIGNEDIN;
 
@@ -98,8 +100,13 @@ public class Client {
         return "in gaming";
     }
 
-    private String logout(String... params){
-        return null;
+    private String logout(String... params) throws DataAccessException {
+        server.logout(authToken);
+        authToken = "";
+        state = State.SIGNEDOUT;
+
+        return "Logged out";
+
     }
 
     private String create(String... params){
