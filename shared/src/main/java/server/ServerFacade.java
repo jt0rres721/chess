@@ -8,7 +8,6 @@ import dataaccess.DataAccessException;
 
 import java.io.*;
 import java.net.*;
-import java.util.HashMap;
 
 public class ServerFacade {
     private final String serverUrl;

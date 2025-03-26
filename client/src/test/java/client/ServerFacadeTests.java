@@ -114,7 +114,6 @@ public class ServerFacadeTests {
 
     }
 
-    //TODO proceed with other tests and facade functions after logout.
     @Test
     public void gameList() throws DataAccessException{
         RegisterRequest request = new RegisterRequest("mario", "x", "x@x");
