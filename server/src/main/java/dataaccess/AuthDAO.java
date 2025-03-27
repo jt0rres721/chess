@@ -5,14 +5,14 @@ import model.AuthData;
 
 
 public interface AuthDAO {
-    AuthData getToken (String token) throws DataAccessException;
+    AuthData getToken (String token) throws ServerException;
 
-    void addToken(String token, String username) throws DataAccessException;
+    void addToken(String token, String username) throws ServerException;
 
-    void deleteToken(String token) throws DataAccessException;
+    void deleteToken(String token) throws ServerException;
 
-    void clear() throws DataAccessException;
+    void clear() throws ServerException;
 
-    AuthData getUser (String user) throws DataAccessException;
+    AuthData getUser (String user) throws ServerException;
 
 }

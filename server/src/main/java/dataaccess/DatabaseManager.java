@@ -38,7 +38,7 @@ public class DatabaseManager {
     /**
      * Creates the database if it does not already exist.
      */
-    static void createDatabase() throws DataAccessException {
+    static void createDatabase() throws ServerException {
         try {
             var statement = "CREATE DATABASE IF NOT EXISTS " + DATABASE_NAME;
             var conn = DriverManager.getConnection(CONNECTION_URL, USER, PASSWORD);
@@ -46,7 +46,7 @@ public class DatabaseManager {
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage(), 469);
+            throw new ServerException(e.getMessage(), 469);
         }
     }
 
@@ -62,17 +62,17 @@ public class DatabaseManager {
      * }
      * </code>
      */
-    static Connection getConnection() throws DataAccessException {
+    static Connection getConnection() throws ServerException {
         try {
             var conn = DriverManager.getConnection(CONNECTION_URL, USER, PASSWORD);
             conn.setCatalog(DATABASE_NAME);
             return conn;
         } catch (SQLException e) {
-            throw new DataAccessException(e.getMessage(),469);
+            throw new ServerException(e.getMessage(),469);
         }
     }
 
-    static void executeUpdate(String statement, Object... params) throws DataAccessException{
+    static void executeUpdate(String statement, Object... params) throws ServerException {
         try (var conn = DatabaseManager.getConnection()){
             try (var ps = conn.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)){
                 for (var i = 0; i < params.length; i++){
@@ -90,11 +90,11 @@ public class DatabaseManager {
 
             }
         } catch (SQLException e){
-            throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()), 500);
+            throw new ServerException(String.format("unable to update database: %s, %s", statement, e.getMessage()), 500);
         }
     }
 
-    static void configureDatabase(String[] createStatements) throws DataAccessException {
+    static void configureDatabase(String[] createStatements) throws ServerException {
         DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()){
             for (var statement : createStatements){
@@ -104,7 +104,7 @@ public class DatabaseManager {
             }
 
         }catch (SQLException ex){
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()),500);
+            throw new ServerException(String.format("Unable to configure database: %s", ex.getMessage()),500);
         }
     }
 

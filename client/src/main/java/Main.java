@@ -1,13 +1,11 @@
 import chess.*;
-import server.Server;
 import server.ServerFacade;
 import ui.Client;
 import ui.Repl;
 
 public class Main {
     public static void main(String[] args) {
-        Server server = new Server();
-        var port = server.run(0);
+        var port = 8080;
         Repl repl = new Repl("http://localhost:" + port);
         Client client = new Client("http://localhost:" + port);
         ServerFacade facade = new ServerFacade("http://localhost:" + port);

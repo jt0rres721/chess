@@ -4,8 +4,8 @@ import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
-import dataaccess.DataAccessException;
 import model.*;
+import server.ServerException;
 import server.ServerFacade;
 import static ui.EscapeSequences.*;
 
@@ -35,7 +35,7 @@ public class Client {
                 case GAMING -> gamingClient(cmd, params);
             };
 
-        }catch (DataAccessException ex){
+        }catch (Exception ex){
             return ex.getMessage();
         }
 
@@ -79,7 +79,7 @@ public class Client {
         return state.toString();
     }
 
-    private String register(String... params) throws DataAccessException {
+    private String register(String... params) throws ServerException {
         if (params.length >= 3){
             RegisterRequest register = new RegisterRequest(params[0], params[1], params[2]);
             var user = server.register(register);
@@ -88,10 +88,10 @@ public class Client {
             state = State.SIGNEDIN;
 
             return String.format("Registered as %s.", user.username());
-        } throw new DataAccessException("Error: Bad request", 400);
+        } throw new ServerException("Error: Bad request", 400);
     }
 
-    private String login(String... params) throws DataAccessException{
+    private String login(String... params) throws ServerException{
         if (params.length >= 2){
             LoginRequest login = new LoginRequest(params[0], params[1]);
             var user = server.login(login);
@@ -100,10 +100,10 @@ public class Client {
             state = State.SIGNEDIN;
 
             return String.format("Logged in as %s.", user.username());
-        } throw new DataAccessException("Error: Bad request", 400);
+        } throw new ServerException("Error: Bad request", 400);
     }
 
-    private String signedOutClient(String cmd, String... params) throws DataAccessException {
+    private String signedOutClient(String cmd, String... params) throws ServerException {
         return switch (cmd) {
             case "register" -> register(params);
             case "login" -> login(params);
@@ -112,7 +112,7 @@ public class Client {
         };
     }
 
-    private String signedInClient(String cmd, String... params) throws DataAccessException{
+    private String signedInClient(String cmd, String... params) throws ServerException{
         return switch (cmd) {
             case "logout" -> logout();
             case "create" -> create(params);
@@ -124,7 +124,7 @@ public class Client {
         };
     }
 
-    private String gamingClient(String cmd, String... params) throws DataAccessException{
+    private String gamingClient(String cmd, String... params) throws ServerException{
         return switch (cmd) {
             case "print" -> printBoard(color);
             case "leave" -> leaveGame();
@@ -138,7 +138,7 @@ public class Client {
         return "Left game";
     }
 
-    private String logout() throws DataAccessException {
+    private String logout() throws ServerException {
         server.logout(authToken);
         authToken = "";
         state = State.SIGNEDOUT;
@@ -147,7 +147,7 @@ public class Client {
 
     }
 
-    private String logoutAndQuit() throws DataAccessException{
+    private String logoutAndQuit() throws ServerException{
         server.logout(authToken);
         authToken = "";
         state = State.SIGNEDOUT;
@@ -155,16 +155,16 @@ public class Client {
         return "quit";
     }
 
-    private String create(String... params) throws DataAccessException {
+    private String create(String... params) throws ServerException {
         if (params.length >= 1){
             CreateRequest create = new CreateRequest(params[0]);
             server.createGame(create, authToken);
 
             return String.format("Created game called %s", params[0]);
-        } throw new DataAccessException("Error: Bad request", 400);
+        } throw new ServerException("Error: Bad request", 400);
     }
 
-    private String list() throws DataAccessException {
+    private String list() throws ServerException {
         games.clear();
         var result = server.listGames(authToken);
         var gameList = result.games();
@@ -187,13 +187,13 @@ public class Client {
         return output.toString();
     }
 
-    private String join(String... params) throws DataAccessException {
+    private String join(String... params) throws ServerException {
         if (params.length >= 2){
             int id;
             try{
                 id = Integer.parseInt(params[0]);
             } catch (Exception e){
-                throw new DataAccessException("Error: Bad request", 400);
+                throw new ServerException("Error: Bad request", 400);
             }
 
             JoinRequest join = new JoinRequest(params[1].toUpperCase(), id);
@@ -203,13 +203,13 @@ public class Client {
 
 
             return printBoard(params[1]);
-        } throw new DataAccessException("Error: Bad request", 400);
+        } throw new ServerException("Error: Bad request", 400);
     }
 
-    private String observe(String... params) throws DataAccessException {
+    private String observe(String... params) throws ServerException {
         if (params.length >= 1){
             return printBoard("white");
-        } throw new DataAccessException("Error: Bad request", 400);
+        } throw new ServerException("Error: Bad request", 400);
     }
 
 

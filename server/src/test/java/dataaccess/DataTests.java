@@ -21,14 +21,14 @@ public class DataTests {
     private GameDAO gameData;
 
     @BeforeEach
-    void setUp() throws DataAccessException {
+    void setUp() throws ServerException {
         userData = new SQLUserDAO();//new MemoryUserDAO();
         authData = new SQLAuthDAO();
         gameData = new SQLGameDAO();
     }
 
     @AfterEach
-    void wrapUp() throws DataAccessException {
+    void wrapUp() throws ServerException {
         userData.clear();
         authData.clear();
         gameData.clear();
@@ -41,7 +41,7 @@ public class DataTests {
     }
 
     @Test
-    void getUserTestPositive() throws DataAccessException {
+    void getUserTestPositive() throws ServerException {
         userData.addUser("user1", "x", "x");
         UserData user = userData.getUser("user1");
         assertEquals("x", user.email());
@@ -50,7 +50,7 @@ public class DataTests {
     }
 
     @Test
-    void getUserTestNegative() throws DataAccessException{
+    void getUserTestNegative() throws ServerException {
         //Testing for a non-existent user
         UserData user = userData.getUser("nonexistentUser");
 
@@ -60,7 +60,7 @@ public class DataTests {
 
 
     @Test
-     void addUserTestPositive() throws DataAccessException{
+     void addUserTestPositive() throws ServerException {
         userData.addUser("user2221", "psasword", "user.gmail");
         UserData user = userData.getUser("user2221");
 
@@ -71,10 +71,10 @@ public class DataTests {
     }
 
     @Test // Tests for adding an existing user
-    void addUserTestNegative() throws DataAccessException{
+    void addUserTestNegative() throws ServerException {
         userData.addUser("userx", "password", "email");
 
-        DataAccessException exception = assertThrows(DataAccessException.class, () ->
+        ServerException exception = assertThrows(ServerException.class, () ->
                 userData.addUser("userx", "password", "email"));
 
         assertEquals("unable to update database: INSERT INTO users (username, password, email, json)" +
@@ -82,7 +82,7 @@ public class DataTests {
     }
 
     @Test
-    void clearUsers() throws DataAccessException{
+    void clearUsers() throws ServerException {
         userData.addUser("1", "x" , "email");
         userData.clear();
 
@@ -93,7 +93,7 @@ public class DataTests {
 
 
     @Test
-    void addAuth() throws DataAccessException{
+    void addAuth() throws ServerException {
         authData.addToken("ntokennax", "x");
         AuthData auth = authData.getToken("ntokennax");
 
@@ -102,11 +102,11 @@ public class DataTests {
     }
 
     @Test
-    void addAuthNeg() throws DataAccessException{
+    void addAuthNeg() throws ServerException {
         //token is already existing
         authData.addToken("ntokennax", "x");
 
-        DataAccessException exception = assertThrows(DataAccessException.class, () ->
+        ServerException exception = assertThrows(ServerException.class, () ->
                 authData.addToken("ntokennax", "x"));
 
         assertEquals("unable to update database: INSERT INTO auth (token, username, json) " +
@@ -116,12 +116,12 @@ public class DataTests {
 
 
     @Test
-    void clearAuth() throws DataAccessException{
+    void clearAuth() throws ServerException {
         authData.clear();
     }
 
     @Test
-    void deleteAuth() throws DataAccessException{
+    void deleteAuth() throws ServerException {
         authData.addToken("yo", "x");
         AuthData auth = authData.getToken("yo");
 
@@ -135,7 +135,7 @@ public class DataTests {
     }
 
     @Test
-    void deleteAuthNegative() throws DataAccessException{
+    void deleteAuthNegative() throws ServerException {
         authData.addToken("yo", "x");
         AuthData auth = authData.getToken("yo");
         assertNotNull(auth);
@@ -144,7 +144,7 @@ public class DataTests {
     }
 
     @Test
-    void getAuthPos() throws DataAccessException {
+    void getAuthPos() throws ServerException {
         authData.addToken("tok", "x");
         AuthData auth = authData.getToken("tok");
 
@@ -153,7 +153,7 @@ public class DataTests {
 
 
     @Test
-    void getAuthNeg() throws DataAccessException{
+    void getAuthNeg() throws ServerException {
         authData.addToken("tok", "x");
         AuthData auth = authData.getToken("tiktok");
 
@@ -161,7 +161,7 @@ public class DataTests {
     }
 
     @Test
-    void createGamePos() throws DataAccessException{
+    void createGamePos() throws ServerException {
         GameData game1 = gameData.create("NewMoon");
         GameData game2 = gameData.create("NewMoon2");
         GameData game3 = gameData.create("NewMoon3");
@@ -176,7 +176,7 @@ public class DataTests {
     }
 
     @Test //Same name tests
-    void createGameNeg() throws DataAccessException{
+    void createGameNeg() throws ServerException {
         GameData game1 = gameData.create("NewMoon");
         GameData game2 = gameData.create("NewMoon");
         GameData game3 = gameData.create("NewMoon");
@@ -190,7 +190,7 @@ public class DataTests {
     }
 
     @Test
-    void clearGames() throws DataAccessException{
+    void clearGames() throws ServerException {
         gameData.create("NewMoon");
         gameData.create("NewMoon2");
         gameData.create("NewMoon3");
@@ -198,7 +198,7 @@ public class DataTests {
     }
 
     @Test
-    void getGamePos() throws DataAccessException{
+    void getGamePos() throws ServerException {
         gameData.create("NewMoon");
         gameData.create("NewMoon2");
 
@@ -210,7 +210,7 @@ public class DataTests {
     }
 
     @Test
-    void getGameNeg() throws DataAccessException{
+    void getGameNeg() throws ServerException {
         gameData.create("NewMoon");
         gameData.create("NewMoon2");
 
@@ -220,7 +220,7 @@ public class DataTests {
     }
 
     @Test
-    void gameList() throws DataAccessException{
+    void gameList() throws ServerException {
         ArrayList<GameData> games = new ArrayList<>();
         for (int i = 0; i < 5; i++){
             GameData game = gameData.create("Game" + (i+1));
@@ -237,7 +237,7 @@ public class DataTests {
     }
 
     @Test
-    void emptyGameList() throws DataAccessException{
+    void emptyGameList() throws ServerException {
         List<GameData> gamelist = gameData.list();
 
         assertTrue(gamelist.isEmpty());
@@ -245,7 +245,7 @@ public class DataTests {
     }
 
     @Test
-    void joinGamePos() throws DataAccessException{
+    void joinGamePos() throws ServerException {
         GameData game = gameData.create("gaming");
         assertNull(game.whiteUsername());
         assertEquals(1, game.gameID());
@@ -257,7 +257,7 @@ public class DataTests {
     }
 
     @Test
-    void joinGameNeg() throws DataAccessException{
+    void joinGameNeg() throws ServerException {
         GameData game = gameData.create("gaming");
         assertNull(game.whiteUsername());
         assertEquals(1, game.gameID());

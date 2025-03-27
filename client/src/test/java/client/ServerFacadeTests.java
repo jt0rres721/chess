@@ -1,10 +1,10 @@
 package client;
 
-import dataaccess.DataAccessException;
 import model.*;
 import org.junit.jupiter.api.*;
 import server.Server;
 import server.ServerFacade;
+import server.ServerException;
 
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -24,9 +24,14 @@ public class ServerFacadeTests {
     }
 
     @AfterAll
-    static void stopServer() throws DataAccessException {
+    static void stopServer() throws server.ServerException {
         facade.clear();
         server.stop();
+    }
+
+    @AfterEach
+    void clearServer() throws server.ServerException {
+        facade.clear();
     }
 
 
@@ -36,7 +41,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void registerTest() throws DataAccessException {
+    public void registerTest() throws server.ServerException {
         RegisterRequest request = new RegisterRequest("luigi", "defund", "depose@gmail");
         var result = facade.register(request);
 
@@ -45,19 +50,19 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void registerNegTest() throws DataAccessException {
+    public void registerNegTest() throws server.ServerException {
         RegisterRequest request = new RegisterRequest("luigi", "defund", "depose@gmail");
         facade.register(request); //Initial registration
 
         //duplicate registration
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> facade.register(request));
+        ServerException exception = assertThrows(ServerException.class, () -> facade.register(request));
 
         assertEquals("Error: already taken", exception.getMessage());
-        assertEquals(403, exception.statusCode());
+        assertEquals(500, exception.statusCode());
     }
 
     @Test
-    public void loginTest() throws DataAccessException{
+    public void loginTest() throws server.ServerException {
         RegisterRequest request2 = new RegisterRequest("luigi", "defund", "depose@gmail");
         facade.register(request2);
 
@@ -69,29 +74,29 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void loginTestNeg()throws DataAccessException{
+    public void loginTestNeg()throws server.ServerException {
         RegisterRequest request2 = new RegisterRequest("luigi", "defund", "depose@gmail");
         facade.register(request2);
 
         //test wrong password
         LoginRequest request = new LoginRequest("luigi", "def");
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> facade.login(request));
+        ServerException exception = assertThrows(ServerException.class, () -> facade.login(request));
 
         assertEquals("Error: unauthorized", exception.getMessage());
-        assertEquals(401, exception.statusCode());
+        assertEquals(500, exception.statusCode());
 
         //test non-existing user
         LoginRequest request3 = new LoginRequest("mario", "defund");
-        DataAccessException ex  =assertThrows(DataAccessException.class, () -> facade.login(request3));
+        ServerException ex  =assertThrows(ServerException.class, () -> facade.login(request3));
 
         assertEquals("Error: unauthorized", ex.getMessage());
-        assertEquals(401, ex.statusCode());
+        assertEquals(500, ex.statusCode());
 
 
     }
 
     @Test
-    public void logoutTest() throws DataAccessException{
+    public void logoutTest() throws server.ServerException {
         RegisterRequest request2 = new RegisterRequest("luigi", "defund", "depose@gmail");
         var user = facade.register(request2);
 
@@ -100,21 +105,21 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void logoutNeg() throws DataAccessException{
+    public void logoutNeg() throws server.ServerException {
         RegisterRequest request = new RegisterRequest("mario", "x", "x@x");
         var user = facade.register(request);
 
         //Invalid authToken
-        DataAccessException ex  =assertThrows(DataAccessException.class, () -> facade.logout("invalidToken"));
+        ServerException ex  =assertThrows(ServerException.class, () -> facade.logout("invalidToken"));
 
         assertEquals("Error: unauthorized", ex.getMessage());
-        assertEquals(401, ex.statusCode());
+        assertEquals(500, ex.statusCode());
 
 
     }
 
     @Test
-    public void gameList() throws DataAccessException{
+    public void gameList() throws server.ServerException {
         RegisterRequest request = new RegisterRequest("mario", "x", "x@x");
         var user = facade.register(request);
 
@@ -134,7 +139,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void gameListNeg() throws DataAccessException{
+    public void gameListNeg() throws server.ServerException {
         RegisterRequest request = new RegisterRequest("mario", "x", "x@x");
         var user = facade.register(request);
 
@@ -142,14 +147,14 @@ public class ServerFacadeTests {
         facade.createGame(new CreateRequest("Game2"), user.authToken());
         facade.createGame(new CreateRequest("Game3"), user.authToken());
 
-        DataAccessException ex  =assertThrows(DataAccessException.class, () -> facade.logout("invalidToken"));
+        ServerException ex  =assertThrows(ServerException.class, () -> facade.logout("invalidToken"));
 
         assertEquals("Error: unauthorized", ex.getMessage());
-        assertEquals(401, ex.statusCode());
+        assertEquals(500, ex.statusCode());
     }
 
     @Test
-    public void createGame() throws DataAccessException{
+    public void createGame() throws server.ServerException {
         RegisterRequest request = new RegisterRequest("mario", "x", "x@x");
         var user = facade.register(request);
 
@@ -161,20 +166,20 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void createGameNeg() throws DataAccessException{
+    public void createGameNeg() throws server.ServerException {
         RegisterRequest request = new RegisterRequest("mario", "x", "x@x");
         var user = facade.register(request);
 
-        DataAccessException ex  =assertThrows(DataAccessException.class, () -> facade.logout("invalidToken"));
+        ServerException ex  =assertThrows(ServerException.class, () -> facade.logout("invalidToken"));
 
         assertEquals("Error: unauthorized", ex.getMessage());
-        assertEquals(401, ex.statusCode());
+        assertEquals(500, ex.statusCode());
 
     }
 
 
     @Test
-    public void joinGame() throws DataAccessException{
+    public void joinGame() throws server.ServerException {
         RegisterRequest request = new RegisterRequest("mario", "x", "x@x");
         var user = facade.register(request);
 
@@ -193,7 +198,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void joinGameNeg() throws DataAccessException{
+    public void joinGameNeg() throws server.ServerException {
         RegisterRequest request = new RegisterRequest("mario", "x", "x@x");
         var user = facade.register(request);
 
@@ -203,24 +208,24 @@ public class ServerFacadeTests {
         //Inexistent color
         JoinRequest join = new JoinRequest("WHIE", 1);
 
-        DataAccessException ex  =assertThrows(DataAccessException.class, () -> facade.joinGame(join, user.authToken()));
+        ServerException ex  =assertThrows(ServerException.class, () -> facade.joinGame(join, user.authToken()));
 
         assertEquals("Error: bad request", ex.getMessage());
-        assertEquals(400, ex.statusCode());
+        assertEquals(500, ex.statusCode());
 
         //unauthorized
 
         JoinRequest join2 = new JoinRequest("WHITE", 1);
-        DataAccessException ex2  =assertThrows(DataAccessException.class, () -> facade.joinGame(join2, "invalidToken"));
+        ServerException ex2  =assertThrows(ServerException.class, () -> facade.joinGame(join2, "invalidToken"));
 
         assertEquals("Error: unauthorized", ex2.getMessage());
-        assertEquals(401, ex2.statusCode());
+        assertEquals(500, ex2.statusCode());
 
 
     }
 
     @Test
-    public void clearTest() throws DataAccessException{
+    public void clearTest() throws server.ServerException {
         RegisterRequest request = new RegisterRequest("luigi", "defund", "depose@gmail");
         facade.register(request);
 

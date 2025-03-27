@@ -27,7 +27,7 @@ public class ServiceTests {
 
     // Positive Test
     @Test
-    void testRegisterSuccess() throws DataAccessException {
+    void testRegisterSuccess() throws ServerException {
         RegisterResult result = userService.register("Alice", "securePass", "alice@example.com");
 
         assertNotNull(result);
@@ -48,10 +48,10 @@ public class ServiceTests {
 
     // Negative Test
     @Test
-    void testRegisterDuplicateUsername() throws DataAccessException {
+    void testRegisterDuplicateUsername() throws ServerException {
         userService.register("Bob", "password123", "bob@example.com");
 
-        DataAccessException exception = assertThrows(DataAccessException.class, () ->
+        ServerException exception = assertThrows(ServerException.class, () ->
                 userService.register("Bob", "newPassword", "newbob@example.com"));
 
         assertEquals("Error: already taken", exception.getMessage());
@@ -61,7 +61,7 @@ public class ServiceTests {
 
     //positive login test
     @Test
-    void testLogin() throws DataAccessException {
+    void testLogin() throws ServerException {
         this.userData.addUser("Jim", "pass", "email");
 
         LoginResult result = userService.login("Jim", "pass");
@@ -74,15 +74,15 @@ public class ServiceTests {
 
     // negative login test
     @Test
-    void testLoginWrongPasswordAndUser() throws DataAccessException {
+    void testLoginWrongPasswordAndUser() throws ServerException {
         this.userData.addUser("Jim", "pass", "email");
 
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> userService.login("Bob", "newPassword"));
+        ServerException exception = assertThrows(ServerException.class, () -> userService.login("Bob", "newPassword"));
 
         assertEquals("Error: unauthorized", exception.getMessage());
         assertEquals(401, exception.statusCode());
 
-        DataAccessException exception2 = assertThrows(DataAccessException.class, () -> userService.login("Jim", "newPassword"));
+        ServerException exception2 = assertThrows(ServerException.class, () -> userService.login("Jim", "newPassword"));
 
         assertEquals("Error: unauthorized", exception2.getMessage());
         assertEquals(401, exception2.statusCode());
@@ -93,7 +93,7 @@ public class ServiceTests {
 
     //positive logout test
     @Test
-    void testLogout() throws DataAccessException {
+    void testLogout() throws ServerException {
         this.userData.addUser("Jim", "pass", "email");
 
         LoginResult result = userService.login("Jim", "pass");
@@ -111,7 +111,7 @@ public class ServiceTests {
 
     //negative logout test
     @Test
-    void testLogoutNegative() throws DataAccessException{
+    void testLogoutNegative() throws ServerException {
         this.userData.addUser("Jim", "pass", "email");
 
         LoginResult result = userService.login("Jim", "pass");
@@ -122,14 +122,14 @@ public class ServiceTests {
         String token = result.authToken();
 
         //logout wrong token
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> userService.logout("bilbobaggins"));
+        ServerException exception = assertThrows(ServerException.class, () -> userService.logout("bilbobaggins"));
 
         assertEquals("Error: unauthorized", exception.getMessage());
         assertEquals(401, exception.statusCode());
 
         //logout twice
         userService.logout(token);
-        DataAccessException exception2 = assertThrows(DataAccessException.class, () -> userService.logout(token));
+        ServerException exception2 = assertThrows(ServerException.class, () -> userService.logout(token));
 
         assertEquals("Error: unauthorized", exception2.getMessage());
         assertEquals(401, exception2.statusCode());
@@ -141,7 +141,7 @@ public class ServiceTests {
 
     //Positive clear tests
     @Test
-    void testClearApp() throws DataAccessException {
+    void testClearApp() throws ServerException {
         userService.register("Alice", "securePass", "alice@example.com");
         userService.register("Alce", "securePass", "alice@example.com");
         userService.register("lice", "securePass", "alice@example.com");
@@ -157,7 +157,7 @@ public class ServiceTests {
 
 
     @Test
-    void testCreateGame() throws DataAccessException {
+    void testCreateGame() throws ServerException {
         RegisterResult result = userService.register("Alice", "securePass", "alice@example.com");
         assertNotNull(result);
         assertEquals("Alice", result.username());
@@ -174,7 +174,7 @@ public class ServiceTests {
     }
 
     @Test
-    void testCreateGameNegative() throws DataAccessException {
+    void testCreateGameNegative() throws ServerException {
         RegisterResult result = userService.register("Alice", "securePass", "alice@example.com");
         assertNotNull(result);
         assertEquals("Alice", result.username());
@@ -182,12 +182,12 @@ public class ServiceTests {
         String token = result.authToken();
 
 
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.createGame(token, null));
+        ServerException exception = assertThrows(ServerException.class, () -> gameService.createGame(token, null));
 
         assertEquals("Error: bad request", exception.getMessage());
         assertEquals(400, exception.statusCode());
 
-        DataAccessException exception2 = assertThrows(DataAccessException.class, () -> gameService.createGame("falseToken", "GGame"));
+        ServerException exception2 = assertThrows(ServerException.class, () -> gameService.createGame("falseToken", "GGame"));
 
         assertEquals("Error: unauthorized", exception2.getMessage());
         assertEquals(401, exception2.statusCode());
@@ -197,7 +197,7 @@ public class ServiceTests {
     }
 
     @Test
-    void listAllGamesTestPositive() throws DataAccessException{
+    void listAllGamesTestPositive() throws ServerException {
         RegisterResult result = userService.register("Alice", "securePass", "alice@example.com");
         assertNotNull(result);
         assertEquals("Alice", result.username());
@@ -222,14 +222,14 @@ public class ServiceTests {
     }
 
     @Test
-    void listAllGamesTestNegative() throws DataAccessException{
+    void listAllGamesTestNegative() throws ServerException {
         RegisterResult result = userService.register("Alice", "securePass", "alice@example.com");
         assertNotNull(result);
         assertEquals("Alice", result.username());
 
 
 
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.list("invalid token"));
+        ServerException exception = assertThrows(ServerException.class, () -> gameService.list("invalid token"));
 
         assertEquals("Error: unauthorized", exception.getMessage());
         assertEquals(401, exception.statusCode());
@@ -238,7 +238,7 @@ public class ServiceTests {
     }
 
     @Test
-    void joinPositive() throws DataAccessException {
+    void joinPositive() throws ServerException {
         GameData game = gameData.create("Game");
         var storedUser = userService.register("bob", "ni", "email");
         String token = storedUser.authToken();
@@ -253,27 +253,27 @@ public class ServiceTests {
     }
 
     @Test
-    void joinNegative() throws DataAccessException {
+    void joinNegative() throws ServerException {
         GameData game = gameData.create("Game");
         var storedUser = userService.register("bob", "ni", "email");
         String token = storedUser.authToken();
 
         //tests for bad request:
         //bad gameID
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.joinGame(token, 500, "WHITE"));
+        ServerException exception = assertThrows(ServerException.class, () -> gameService.joinGame(token, 500, "WHITE"));
 
         assertEquals("Error: bad request", exception.getMessage());
         assertEquals(400, exception.statusCode());
 
         //bad playerColor
-        exception = assertThrows(DataAccessException.class, () -> gameService.joinGame(token, game.gameID(), "WHTE"));
+        exception = assertThrows(ServerException.class, () -> gameService.joinGame(token, game.gameID(), "WHTE"));
 
         assertEquals("Error: bad request", exception.getMessage());
         assertEquals(400, exception.statusCode());
 
 
         //Test for unauthorized request
-        exception = assertThrows(DataAccessException.class, () -> gameService.joinGame("invalid token", game.gameID(), "WHITE"));
+        exception = assertThrows(ServerException.class, () -> gameService.joinGame("invalid token", game.gameID(), "WHITE"));
 
         assertEquals("Error: unauthorized", exception.getMessage());
         assertEquals(401, exception.statusCode());
@@ -282,7 +282,7 @@ public class ServiceTests {
 
         //Test for already taken username
         gameData.joinGame(game.gameID(), "WHITE", "bobnemesis");
-        exception = assertThrows(DataAccessException.class, () -> gameService.joinGame(token, game.gameID(), "WHITE"));
+        exception = assertThrows(ServerException.class, () -> gameService.joinGame(token, game.gameID(), "WHITE"));
 
         assertEquals("Error: already taken", exception.getMessage());
         assertEquals(403, exception.statusCode());

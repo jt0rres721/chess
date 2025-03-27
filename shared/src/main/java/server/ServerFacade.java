@@ -2,7 +2,6 @@ package server;
 
 import com.google.gson.Gson;
 import model.*;
-import dataaccess.DataAccessException;
 
 
 
@@ -17,47 +16,48 @@ public class ServerFacade {
         this.serverUrl = Url;
     }
 
-    public RegisterResult register(RegisterRequest request) throws DataAccessException {
+    public RegisterResult register(RegisterRequest request) throws ServerException {
         var path = "/user";
 
         return makeRequest("POST", path, request, RegisterResult.class, null);
     }
 
-    public LoginResult login(LoginRequest request) throws DataAccessException{
+    public LoginResult login(LoginRequest request) throws ServerException{
         var path = "/session";
         return makeRequest("POST", path, request, LoginResult.class, null);
     }
 
-    public void logout(String token) throws DataAccessException{
+    public void logout(String token) throws ServerException{
         var path = "/session";
         makeRequest("DELETE", path, null, null, token);
     }
 
-    public ListResult listGames(String token) throws DataAccessException{
+    public ListResult listGames(String token) throws ServerException{
         var path = "/game";
 
         return makeRequest("GET", path, null, ListResult.class, token);
     }
 
 
-    public CreateResult createGame(CreateRequest create, String token) throws DataAccessException{
+    public CreateResult createGame(CreateRequest create, String token) throws ServerException{
         var path = "/game";
 
         return makeRequest("POST", path, create, CreateResult.class, token);
     }
 
-    public void joinGame(JoinRequest request, String token)throws DataAccessException{
+    public void joinGame(JoinRequest request, String token)throws ServerException{
         var path = "/game";
 
         makeRequest("PUT", path, request, null, token);
     }
 
-    public void clear() throws DataAccessException {
+    public void clear() throws ServerException {
         var path = "/db";
         makeRequest("DELETE", path, null, null, null);
     }
 
-    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String token) throws DataAccessException {
+    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String token)
+            throws ServerException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
@@ -72,10 +72,8 @@ public class ServerFacade {
             http.connect();
             throwIfNotSuccessful(http);
             return readBody(http, responseClass);
-        } catch (DataAccessException ex) {
-            throw ex;
         } catch (Exception ex) {
-            throw new DataAccessException(ex.getMessage(), 500);
+            throw new ServerException(ex.getMessage(), 500);
         }
     }
 
@@ -102,16 +100,16 @@ public class ServerFacade {
         return response;
     }
 
-    private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, DataAccessException {
+    private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ServerException {
         var status = http.getResponseCode();
         if (!isSuccessful(status)) {
             try (InputStream respErr = http.getErrorStream()) {
                 if (respErr != null) {
-                    throw DataAccessException.fromJson(respErr);
+                    throw ServerException.fromJson(respErr);
                 }
             }
 
-            throw new DataAccessException("other failure: " + status, status);
+            throw new ServerException("other failure: " + status, status);
         }
     }
 

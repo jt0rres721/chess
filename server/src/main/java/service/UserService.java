@@ -1,7 +1,7 @@
 package service;
 
 import dataaccess.AuthDAO;
-import dataaccess.DataAccessException;
+import dataaccess.ServerException;
 import model.AuthData;
 import model.UserData;
 import model.LoginResult;
@@ -23,14 +23,14 @@ public class UserService {
         this.authDBase = authDBase;
     }
 
-    public RegisterResult register(String username, String password, String email) throws DataAccessException {
+    public RegisterResult register(String username, String password, String email) throws ServerException {
         if(username.isEmpty() || password.isEmpty() || email.isEmpty()){
-            throw new DataAccessException("Error: bad request", 400);
+            throw new ServerException("Error: bad request", 400);
         }
         if (getUser(username) == null ){
             this.userDBase.addUser(username, password, email);
         } else {
-            throw new DataAccessException("Error: already taken", 403);
+            throw new ServerException("Error: already taken", 403);
         }
 
         String token = createAuth(username);
@@ -39,7 +39,7 @@ public class UserService {
         return new RegisterResult(username, token);
     }
 
-    public UserData getUser(String username) throws DataAccessException {
+    public UserData getUser(String username) throws ServerException {
         return userDBase.getUser(username);
     }
 
@@ -47,11 +47,11 @@ public class UserService {
         return UUID.randomUUID().toString();
     }
 
-    public AuthData getToken(String token) throws DataAccessException {
+    public AuthData getToken(String token) throws ServerException {
         return authDBase.getToken(token);
     }
 
-    public String createAuth(String username) throws DataAccessException {//throws DataAccessException{
+    public String createAuth(String username) throws ServerException {//throws DataAccessException{
         String token = generateToken();
 
         //if (authDBase.users().contains(username)){throw new DataAccessException("Error: unauthorized", 401);}
@@ -59,7 +59,7 @@ public class UserService {
         return token;
     }
 
-    public LoginResult login(String username, String password) throws DataAccessException{
+    public LoginResult login(String username, String password) throws ServerException {
         if (getUser(username) != null){
             if(userDBase.verifyUser(username, password)){
                 String token = createAuth(username);
@@ -67,15 +67,15 @@ public class UserService {
                 return new LoginResult(username, token);
 
 
-            } else {throw new DataAccessException("Error: unauthorized", 401);}
-        } else {throw new DataAccessException("Error: unauthorized", 401);}
+            } else {throw new ServerException("Error: unauthorized", 401);}
+        } else {throw new ServerException("Error: unauthorized", 401);}
     }
 
-    public void logout(String token) throws DataAccessException{
+    public void logout(String token) throws ServerException {
         if (getToken(token) != null){
             this.authDBase.deleteToken(token);
         } else {
-            throw new DataAccessException("Error: unauthorized", 401);
+            throw new ServerException("Error: unauthorized", 401);
         }
     }
 

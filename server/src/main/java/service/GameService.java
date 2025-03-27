@@ -1,7 +1,7 @@
 package service;
 
 import dataaccess.AuthDAO;
-import dataaccess.DataAccessException;
+import dataaccess.ServerException;
 import dataaccess.GameDAO;
 import model.GameData;
 import model.CreateResult;
@@ -20,9 +20,9 @@ public class GameService {
         this.authData = authData;
     }
 
-    public ListResult list(String token) throws DataAccessException{
+    public ListResult list(String token) throws ServerException {
         if(authData.getToken(token) == null){
-            throw new DataAccessException("Error: unauthorized", 401);
+            throw new ServerException("Error: unauthorized", 401);
         } else {
             List<GameData> games = gameData.list();
 
@@ -36,38 +36,38 @@ public class GameService {
         }
     }
 
-    public CreateResult createGame(String token, String gameName) throws DataAccessException{
+    public CreateResult createGame(String token, String gameName) throws ServerException {
         if (gameName == null) {
-            throw new DataAccessException("Error: bad request", 400);
+            throw new ServerException("Error: bad request", 400);
         } else if(authData.getToken(token) == null){
-            throw new DataAccessException("Error: unauthorized", 401);
+            throw new ServerException("Error: unauthorized", 401);
         } else {
             GameData game = gameData.create(gameName);
             return new CreateResult(game.gameID());
         }
     }
 
-    public GameData getGame(int gameID) throws DataAccessException {
+    public GameData getGame(int gameID) throws ServerException {
         return gameData.getGame(gameID);
     }
 
-    public GameData joinGame(String token, int gameID, String playerColor) throws DataAccessException{
+    public GameData joinGame(String token, int gameID, String playerColor) throws ServerException {
         if (gameID <= 0 || playerColor == null || playerColor.isEmpty() || (!playerColor.equals("WHITE")
                 && !playerColor.equals("BLACK")) || gameData.getGame(gameID) == null) {
-            throw new DataAccessException("Error: bad request", 400);
+            throw new ServerException("Error: bad request", 400);
         }
         if (authData.getToken(token) == null){
-            throw new DataAccessException("Error: unauthorized", 401);
+            throw new ServerException("Error: unauthorized", 401);
         }
 
         if (playerColor.equals("WHITE")){
             if (getGame(gameID).whiteUsername() != null){
-                throw new DataAccessException("Error: already taken", 403);
+                throw new ServerException("Error: already taken", 403);
             }
         }
         if (playerColor.equals("BLACK")){
             if (getGame(gameID).blackUsername() != null){
-                throw new DataAccessException("Error: already taken", 403);
+                throw new ServerException("Error: already taken", 403);
             }
         }
 

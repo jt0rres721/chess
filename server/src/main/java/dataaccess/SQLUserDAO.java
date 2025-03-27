@@ -13,7 +13,7 @@ import static dataaccess.DatabaseManager.executeUpdate;
 
 public class SQLUserDAO implements UserDAO{
 
-    public SQLUserDAO() throws DataAccessException{
+    public SQLUserDAO() throws ServerException {
         String[] createStatements = {
                 """
                 CREATE TABLE IF NOT EXISTS  users (
@@ -30,7 +30,7 @@ public class SQLUserDAO implements UserDAO{
     }
 
     @Override
-    public UserData getUser(String username) throws DataAccessException{
+    public UserData getUser(String username) throws ServerException {
         try (var conn = DatabaseManager.getConnection()){
             var statement = "SELECT username, json FROM users WHERE username=?";
             try (var ps = conn.prepareStatement(statement)){
@@ -42,14 +42,14 @@ public class SQLUserDAO implements UserDAO{
                 }
             }
         } catch (Exception e){
-            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()), 500);
+            throw new ServerException(String.format("Unable to read data: %s", e.getMessage()), 500);
         }
 
         return null;
     }
 
     @Override
-    public void addUser(String username, String password, String email) throws DataAccessException{
+    public void addUser(String username, String password, String email) throws ServerException {
         String hashpass = encryptPassword(password);
         var statement = "INSERT INTO users (username, password, email, json) values(?, ?, ?, ?)";
         var json = new Gson().toJson(new UserData(username, hashpass, email));
@@ -57,7 +57,7 @@ public class SQLUserDAO implements UserDAO{
     }
 
     @Override
-    public void clear() throws DataAccessException{
+    public void clear() throws ServerException {
         var statement = "TRUNCATE users";
         executeUpdate(statement);
     }
@@ -66,7 +66,7 @@ public class SQLUserDAO implements UserDAO{
         return BCrypt.hashpw(clearTextPassword, BCrypt.gensalt());
     }
 
-    public boolean verifyUser(String username, String password) throws DataAccessException {
+    public boolean verifyUser(String username, String password) throws ServerException {
         UserData user = getUser(username);
         return BCrypt.checkpw(password, user.password());
     }

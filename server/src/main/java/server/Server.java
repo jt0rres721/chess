@@ -1,6 +1,7 @@
 package server;
 
 import dataaccess.*;
+import dataaccess.ServerException;
 import model.*;
 import service.AppService;
 import service.GameService;
@@ -17,19 +18,19 @@ public class Server {
         UserDAO userData = null;
         try {
             userData = new SQLUserDAO();
-        } catch (DataAccessException e) {
+        } catch (ServerException e) {
             System.out.println("UserData exception caught");
         }
         AuthDAO authData = null;
         try {
             authData = new SQLAuthDAO();
-        } catch (DataAccessException e) {
+        } catch (ServerException e) {
             System.out.println("AuthData exception caught");
         }
         GameDAO gameData = null;
         try {
             gameData = new SQLGameDAO();
-        } catch (DataAccessException e) {
+        } catch (ServerException e) {
             System.out.println("GameData exception caught");
         }
 
@@ -53,7 +54,7 @@ public class Server {
 
         Spark.delete("/db", this::clear);
 
-        Spark.exception(DataAccessException.class, this::exceptionHandler);
+        Spark.exception(ServerException.class, this::exceptionHandler);
 
 
 
@@ -69,17 +70,17 @@ public class Server {
         Spark.awaitStop();
     }
 
-    private void exceptionHandler(DataAccessException ex, Request req, Response res){
+    private void exceptionHandler(ServerException ex, Request req, Response res){
         res.status(ex.statusCode());
         res.body(ex.toJson());
     }
 
 
-    private Object register(Request req, Response res) throws DataAccessException {
+    private Object register(Request req, Response res) throws ServerException {
         var body = new Gson().fromJson(req.body(), RegisterRequest.class);
 
         if (body.username() == null || body.password() == null || body.email() == null){
-            throw new DataAccessException("Error: bad request", 400);
+            throw new ServerException("Error: bad request", 400);
         }
 
         RegisterResult result = userService.register(body.username(), body.password(), body.email());
@@ -88,11 +89,11 @@ public class Server {
         return new Gson().toJson(result);
     }
 
-    private Object login(Request req, Response res) throws DataAccessException {
+    private Object login(Request req, Response res) throws ServerException {
         var body = new Gson().fromJson(req.body(), LoginRequest.class);
 
         if (body.username() == null || body.password() == null){
-            throw new DataAccessException("Error: bad request", 400);
+            throw new ServerException("Error: bad request", 400);
         }
 
         LoginResult result = userService.login(body.username(), body.password());
@@ -101,7 +102,7 @@ public class Server {
 
     }
 
-    private Object logout(Request req, Response res) throws DataAccessException {
+    private Object logout(Request req, Response res) throws ServerException {
         String token = req.headers("Authorization");
 
         userService.logout(token);
@@ -109,13 +110,13 @@ public class Server {
         return new Gson().toJson(null);
     }
 
-    private Object clear(Request req, Response res) throws DataAccessException {
+    private Object clear(Request req, Response res) throws ServerException {
         appService.clear();
 
         return new Gson().toJson(null);
     }
 
-    private Object listGames(Request req, Response res) throws DataAccessException {
+    private Object listGames(Request req, Response res) throws ServerException {
         String token = req.headers("Authorization");
 
         ListResult result = gameService.list(token);
@@ -123,7 +124,7 @@ public class Server {
         return new Gson().toJson(result);
     }
 
-    private Object createGame(Request req, Response res) throws DataAccessException {
+    private Object createGame(Request req, Response res) throws ServerException {
         String token = req.headers("Authorization");
         var body = new Gson().fromJson(req.body(), CreateRequest.class);
 
@@ -133,14 +134,14 @@ public class Server {
         return new Gson().toJson(result);
     }
 
-    private Object joinGame(Request req, Response res) throws DataAccessException {
+    private Object joinGame(Request req, Response res) throws ServerException {
         String token = req.headers("Authorization");
 
         JoinRequest body;
         try {
             body = new Gson().fromJson(req.body(), JoinRequest.class);
         } catch (com.google.gson.JsonSyntaxException e) {
-            throw new DataAccessException("Error: bad request", 400);
+            throw new ServerException("Error: bad request", 400);
         }
 
 

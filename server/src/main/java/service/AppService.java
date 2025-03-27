@@ -1,6 +1,6 @@
 package service;
 
-import dataaccess.DataAccessException;
+import dataaccess.ServerException;
 import dataaccess.GameDAO;
 import dataaccess.AuthDAO;
 import dataaccess.UserDAO;
@@ -18,7 +18,7 @@ public class AppService {
         this.userData = userData;
     }
 
-    public void clear() throws DataAccessException {
+    public void clear() throws ServerException {
         gameData.clear();
         userData.clear();
         authData.clear();
