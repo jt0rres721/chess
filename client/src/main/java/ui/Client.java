@@ -9,10 +9,8 @@ import model.*;
 import server.ServerFacade;
 import static ui.EscapeSequences.*;
 
-import javax.xml.crypto.Data;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Objects;
 
 public class Client {
     private String authToken = "";
@@ -225,22 +223,22 @@ public class Client {
 
     public String printBoard(String color){   //TODO make private
         ChessBoard board = new ChessBoard();//game.getBoard();
+        board.resetBoard();
 
 
         StringBuilder output = new StringBuilder();
         if (color.equals( "white")) {
-
             output.append(SET_TEXT_COLOR_BLACK);
             output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
-            output.append(SET_BG_COLOR_LIGHT_GREY + " a ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " b ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " c ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " d ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " e ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " f ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " g ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " a  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + "b  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " c  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " d  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + "e  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " f  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + "g  ");
             output.append(SET_BG_COLOR_LIGHT_GREY + " h ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
+            output.append(SET_BG_COLOR_LIGHT_GREY + "   ");
             output.append(RESET_BG_COLOR + "\n");
 
             for (int i = 0; i < 8; i++) {
@@ -262,29 +260,61 @@ public class Client {
             }
             output.append(SET_TEXT_COLOR_BLACK);
             output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
-            output.append(SET_BG_COLOR_LIGHT_GREY + " a ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " b ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " c ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " d ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " e ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " f ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " g ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " a  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + "b  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " c  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " d  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + "e  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " f  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + "g  ");
             output.append(SET_BG_COLOR_LIGHT_GREY + " h ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
+            output.append(SET_BG_COLOR_LIGHT_GREY + "   ");
             output.append(RESET_BG_COLOR + "\n");
 
         } else {
+            output.append(SET_TEXT_COLOR_BLACK);
             output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
-            output.append(SET_BG_COLOR_LIGHT_GREY + " h ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " g ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " f ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " e ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " d ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " c ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " b ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " h  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + "g  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " f  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " e  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + "d  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " c  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + "b  ");
             output.append(SET_BG_COLOR_LIGHT_GREY + " a ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
+            output.append(SET_BG_COLOR_LIGHT_GREY + "   ");
+            output.append(RESET_BG_COLOR + "\n");
+
+            for (int i = 0; i < 8; i++) {
+                output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", 8 - i));
+                for (int j = 0; j < 8; j++) {
+                    ChessPosition position = new ChessPosition(i+1,8-j);
+                    ChessPiece piece = board.getPiece(position);
+                    if (piece == null){
+                        output.append(printSquare(i+1, 8-j));
+                    } else {
+                        output.append(printPiece(piece, i+1, 8-j));
+                    }
+
+
+
+                }
+                output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", 8 - i));
+                output.append(RESET_BG_COLOR + "\n");
+            }
         }
+        output.append(SET_TEXT_COLOR_BLACK);
+        output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
+        output.append(SET_BG_COLOR_LIGHT_GREY + " h  ");
+        output.append(SET_BG_COLOR_LIGHT_GREY + "g  ");
+        output.append(SET_BG_COLOR_LIGHT_GREY + " f  ");
+        output.append(SET_BG_COLOR_LIGHT_GREY + " e  ");
+        output.append(SET_BG_COLOR_LIGHT_GREY + "d  ");
+        output.append(SET_BG_COLOR_LIGHT_GREY + " c  ");
+        output.append(SET_BG_COLOR_LIGHT_GREY + "b  ");
+        output.append(SET_BG_COLOR_LIGHT_GREY + " a ");
+        output.append(SET_BG_COLOR_LIGHT_GREY + "   ");
+        output.append(RESET_BG_COLOR + "\n");
 
         output.append(RESET_BG_COLOR);
         return output.toString();
@@ -294,15 +324,15 @@ public class Client {
         String square;
         if (row % 2 == 0){
             if (col % 2 == 0){
-                square = SET_BG_COLOR_BLACK + EMPTY;
+                square = SET_BG_COLOR_DARK_BROWN + EMPTY;
             } else {
-                square = SET_BG_COLOR_WHITE + EMPTY;
+                square = SET_BG_COLOR_LIGHT_BROWN + EMPTY;
             }
         } else {
             if (col % 2 == 0){
-                square = SET_BG_COLOR_WHITE + EMPTY;
+                square = SET_BG_COLOR_LIGHT_BROWN + EMPTY;
             } else {
-                square = SET_BG_COLOR_BLACK + EMPTY;
+                square = SET_BG_COLOR_DARK_BROWN + EMPTY;
             }
         }
         return square;
@@ -310,17 +340,26 @@ public class Client {
 
     private String printPiece(ChessPiece piece, int row, int col){
         String square;
+        String pieceString;
+        switch (piece.getPieceType()){
+            case KNIGHT -> pieceString = (piece.getTeamColor() == ChessGame.TeamColor.WHITE) ? WHITE_KNIGHT : BLACK_KNIGHT;
+            case BISHOP -> pieceString = (piece.getTeamColor() == ChessGame.TeamColor.WHITE) ? WHITE_BISHOP : BLACK_BISHOP;
+            case ROOK -> pieceString = (piece.getTeamColor() == ChessGame.TeamColor.WHITE) ? WHITE_ROOK : BLACK_ROOK;
+            case QUEEN -> pieceString = (piece.getTeamColor() == ChessGame.TeamColor.WHITE) ? WHITE_QUEEN : BLACK_QUEEN;
+            case KING -> pieceString = (piece.getTeamColor() == ChessGame.TeamColor.WHITE) ? WHITE_KING : BLACK_KING;
+            default -> pieceString = (piece.getTeamColor() == ChessGame.TeamColor.WHITE) ? WHITE_PAWN : BLACK_PAWN;
+        }
         if (row % 2 == 0){
             if (col % 2 == 0){
-                square = SET_BG_COLOR_BLACK + EMPTY;
+                square = SET_BG_COLOR_DARK_BROWN + pieceString;
             } else {
-                square = SET_BG_COLOR_WHITE + EMPTY;
+                square = SET_BG_COLOR_LIGHT_BROWN + pieceString;
             }
         } else {
             if (col % 2 == 0){
-                square = SET_BG_COLOR_WHITE + EMPTY;
+                square = SET_BG_COLOR_LIGHT_BROWN + pieceString;
             } else {
-                square = SET_BG_COLOR_BLACK + EMPTY;
+                square = SET_BG_COLOR_DARK_BROWN + pieceString;
             }
         }
         return square;

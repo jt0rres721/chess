@@ -83,7 +83,7 @@ public class ClientTests {
 
     @Test
     public void printBoardTest() throws DataAccessException {
-        System.out.print(client.printBoard("white"));
+        System.out.print(client.printBoard("black"));
     }
 
 
