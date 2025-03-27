@@ -19,6 +19,7 @@ public class Client {
     private State state = State.SIGNEDOUT;
     private Repl repl;
     private HashMap<Integer, ListResult2> games = new HashMap<>();
+    private String color = "";
 
 
     public Client(String serverUrl, Repl repl){
@@ -129,6 +130,7 @@ public class Client {
 
     private String gamingClient(String cmd, String... params) throws DataAccessException{
         return switch (cmd) {
+            case "print" -> printBoard(color);
             case "leave" -> leaveGame();
             case "quit" -> "quit";
             default -> helpG();
@@ -201,6 +203,7 @@ public class Client {
             JoinRequest join = new JoinRequest(params[1].toUpperCase(), id);
             server.joinGame(join, authToken);
             state = State.GAMING;
+            color = params[1];
 
 
             return printBoard(params[1]);
@@ -221,7 +224,7 @@ public class Client {
         state = st;
     }
 
-    public String printBoard(String color){   //TODO make private
+    private String printBoard(String color){
         ChessBoard board = new ChessBoard();//game.getBoard();
         board.resetBoard();
 

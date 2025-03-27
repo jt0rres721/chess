@@ -81,10 +81,10 @@ public class ClientTests {
         assertEquals("Error: Bad request", result);
     }
 
-    @Test
-    public void printBoardTest() throws DataAccessException {
-        System.out.print(client.printBoard("black"));
-    }
+//    @Test
+//    public void printBoardTest() throws DataAccessException {
+//        System.out.print(client.printBoard("black"));
+//    }
 
 
 }
