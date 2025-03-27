@@ -229,17 +229,7 @@ public class Client {
         StringBuilder output = new StringBuilder();
         if (color.equals( "white")) {
             output.append(SET_TEXT_COLOR_BLACK);
-            output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
-            output.append(SET_BG_COLOR_LIGHT_GREY + " a  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + "b  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " c  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " d  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + "e  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " f  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + "g  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " h ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + "   ");
-            output.append(RESET_BG_COLOR + "\n");
+            output.append(printHeader(color));
 
             for (int i = 0; i < 8; i++) {
                 output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", 8 - i));
@@ -258,35 +248,15 @@ public class Client {
                 output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", 8 - i));
                 output.append(RESET_BG_COLOR + "\n");
             }
-            output.append(SET_TEXT_COLOR_BLACK);
-            output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
-            output.append(SET_BG_COLOR_LIGHT_GREY + " a  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + "b  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " c  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " d  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + "e  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " f  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + "g  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " h ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + "   ");
-            output.append(RESET_BG_COLOR + "\n");
+            //output.append(SET_TEXT_COLOR_BLACK);
+            output.append(printHeader(color));
 
         } else {
             output.append(SET_TEXT_COLOR_BLACK);
-            output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
-            output.append(SET_BG_COLOR_LIGHT_GREY + " h  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + "g  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " f  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " e  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + "d  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " c  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + "b  ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + " a ");
-            output.append(SET_BG_COLOR_LIGHT_GREY + "   ");
-            output.append(RESET_BG_COLOR + "\n");
+            output.append(printHeader(color));
 
             for (int i = 0; i < 8; i++) {
-                output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", 8 - i));
+                output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", i + 1));
                 for (int j = 0; j < 8; j++) {
                     ChessPosition position = new ChessPosition(i+1,8-j);
                     ChessPiece piece = board.getPiece(position);
@@ -299,22 +269,12 @@ public class Client {
 
 
                 }
-                output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", 8 - i));
+                output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", i + 1));
                 output.append(RESET_BG_COLOR + "\n");
             }
         }
         output.append(SET_TEXT_COLOR_BLACK);
-        output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
-        output.append(SET_BG_COLOR_LIGHT_GREY + " h  ");
-        output.append(SET_BG_COLOR_LIGHT_GREY + "g  ");
-        output.append(SET_BG_COLOR_LIGHT_GREY + " f  ");
-        output.append(SET_BG_COLOR_LIGHT_GREY + " e  ");
-        output.append(SET_BG_COLOR_LIGHT_GREY + "d  ");
-        output.append(SET_BG_COLOR_LIGHT_GREY + " c  ");
-        output.append(SET_BG_COLOR_LIGHT_GREY + "b  ");
-        output.append(SET_BG_COLOR_LIGHT_GREY + " a ");
-        output.append(SET_BG_COLOR_LIGHT_GREY + "   ");
-        output.append(RESET_BG_COLOR + "\n");
+        output.append(printHeader(color));
 
         output.append(RESET_BG_COLOR);
         return output.toString();
@@ -363,6 +323,37 @@ public class Client {
             }
         }
         return square;
+    }
+
+    private String printHeader(String color){
+        StringBuilder output = new StringBuilder();
+        if (color.equals("white")){
+            output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
+            output.append(SET_BG_COLOR_LIGHT_GREY + " a  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + "b  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " c  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " d  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + "e  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " f  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + "g  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " h ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + "   ");
+            output.append(RESET_BG_COLOR + "\n");
+        } else {
+            output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
+            output.append(SET_BG_COLOR_LIGHT_GREY + " h  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + "g  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " f  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " e  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + "d  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " c  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + "b  ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " a ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + "   ");
+            output.append(RESET_BG_COLOR + "\n");
+        }
+
+        return output.toString();
     }
 
 }
