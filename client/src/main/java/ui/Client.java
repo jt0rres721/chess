@@ -217,9 +217,6 @@ public class Client {
 
 
 
-    public void setState(State st){
-        state = st;
-    }
 
     private String printBoard(String color){
         ChessBoard board = new ChessBoard();//game.getBoard();

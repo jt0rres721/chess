@@ -107,7 +107,7 @@ public class ServerFacadeTests {
     @Test
     public void logoutNeg() throws ServerException{
         RegisterRequest request = new RegisterRequest("mario", "x", "x@x");
-        var user = facade.register(request);
+        facade.register(request);
 
         //Invalid authToken
         ServerException ex  =assertThrows(ServerException.class, () -> facade.logout("invalidToken"));
@@ -166,7 +166,7 @@ public class ServerFacadeTests {
     @Test
     public void createGameNeg() throws ServerException{
         RegisterRequest request = new RegisterRequest("mario", "x", "x@x");
-        var user = facade.register(request);
+        facade.register(request);
 
         ServerException ex  =assertThrows(ServerException.class, () -> facade.logout("invalidToken"));
 
