@@ -1,12 +1,18 @@
 package ui;
 
+import chess.ChessBoard;
+import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import dataaccess.DataAccessException;
 import model.*;
 import server.ServerFacade;
+import static ui.EscapeSequences.*;
 
 import javax.xml.crypto.Data;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class Client {
     private String authToken = "";
@@ -125,9 +131,15 @@ public class Client {
 
     private String gamingClient(String cmd, String... params) throws DataAccessException{
         return switch (cmd) {
+            case "leave" -> leaveGame();
             case "quit" -> "quit";
             default -> helpG();
         };
+    }
+
+    private String leaveGame(){
+        state = State.SIGNEDIN;
+        return "Left game";
     }
 
     private String logout() throws DataAccessException {
@@ -181,24 +193,25 @@ public class Client {
 
     private String join(String... params) throws DataAccessException {
         if (params.length >= 2){
-            int id = 0;
+            int id;
             try{
                 id = Integer.parseInt(params[0]);
             } catch (Exception e){
                 throw new DataAccessException("Error: Bad request", 400);
             }
 
-            JoinRequest join = new JoinRequest(params[1].toUpperCase(), games.get(id).gameID());
+            JoinRequest join = new JoinRequest(params[1].toUpperCase(), id);
             server.joinGame(join, authToken);
             state = State.GAMING;
 
-            return "Joined game";
+
+            return printBoard(params[1]);
         } throw new DataAccessException("Error: Bad request", 400);
     }
 
     private String observe(String... params) throws DataAccessException {
         if (params.length >= 1){
-            return "Weird request not yet implememnted"; //TODO implememnt this shi
+            return printBoard("white");
         } throw new DataAccessException("Error: Bad request", 400);
     }
 
@@ -208,6 +221,109 @@ public class Client {
 
     public void setState(State st){
         state = st;
+    }
+
+    public String printBoard(String color){   //TODO make private
+        ChessBoard board = new ChessBoard();//game.getBoard();
+
+
+        StringBuilder output = new StringBuilder();
+        if (color.equals( "white")) {
+
+            output.append(SET_TEXT_COLOR_BLACK);
+            output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
+            output.append(SET_BG_COLOR_LIGHT_GREY + " a ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " b ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " c ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " d ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " e ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " f ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " g ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " h ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
+            output.append(RESET_BG_COLOR + "\n");
+
+            for (int i = 0; i < 8; i++) {
+                output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", 8 - i));
+                for (int j = 0; j < 8; j++) {
+                    ChessPosition position = new ChessPosition(8-i,j+1);
+                    ChessPiece piece = board.getPiece(position);
+                    if (piece == null){
+                        output.append(printSquare(8-i, j+1));
+                    } else {
+                        output.append(printPiece(piece, 8 - i, j + 1));
+                    }
+
+
+
+                }
+                output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", 8 - i));
+                output.append(RESET_BG_COLOR + "\n");
+            }
+            output.append(SET_TEXT_COLOR_BLACK);
+            output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
+            output.append(SET_BG_COLOR_LIGHT_GREY + " a ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " b ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " c ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " d ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " e ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " f ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " g ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " h ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
+            output.append(RESET_BG_COLOR + "\n");
+
+        } else {
+            output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
+            output.append(SET_BG_COLOR_LIGHT_GREY + " h ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " g ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " f ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " e ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " d ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " c ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " b ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + " a ");
+            output.append(SET_BG_COLOR_LIGHT_GREY + EMPTY);
+        }
+
+        output.append(RESET_BG_COLOR);
+        return output.toString();
+    }
+
+    private String printSquare(int row, int col){
+        String square;
+        if (row % 2 == 0){
+            if (col % 2 == 0){
+                square = SET_BG_COLOR_BLACK + EMPTY;
+            } else {
+                square = SET_BG_COLOR_WHITE + EMPTY;
+            }
+        } else {
+            if (col % 2 == 0){
+                square = SET_BG_COLOR_WHITE + EMPTY;
+            } else {
+                square = SET_BG_COLOR_BLACK + EMPTY;
+            }
+        }
+        return square;
+    }
+
+    private String printPiece(ChessPiece piece, int row, int col){
+        String square;
+        if (row % 2 == 0){
+            if (col % 2 == 0){
+                square = SET_BG_COLOR_BLACK + EMPTY;
+            } else {
+                square = SET_BG_COLOR_WHITE + EMPTY;
+            }
+        } else {
+            if (col % 2 == 0){
+                square = SET_BG_COLOR_WHITE + EMPTY;
+            } else {
+                square = SET_BG_COLOR_BLACK + EMPTY;
+            }
+        }
+        return square;
     }
 
 }
