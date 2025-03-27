@@ -16,7 +16,7 @@ public class Client {
     private String authToken = "";
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
-    private HashMap<Integer, ListResult2> games = new HashMap<>();
+    private final HashMap<Integer, ListResult2> games = new HashMap<>();
     private String color = "";
 
 
@@ -158,7 +158,7 @@ public class Client {
     private String create(String... params) throws DataAccessException {
         if (params.length >= 1){
             CreateRequest create = new CreateRequest(params[0]);
-            var game = server.createGame(create, authToken);
+            server.createGame(create, authToken);
 
             return String.format("Created game called %s", params[0]);
         } throw new DataAccessException("Error: Bad request", 400);

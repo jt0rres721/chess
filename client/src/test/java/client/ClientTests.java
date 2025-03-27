@@ -17,7 +17,7 @@ public class ClientTests {
     private static Client client;
     private static ServerFacade facade;
 
-    static Repl repl = new Repl("http://localhost:" + port);
+//    static Repl repl = new Repl("http://localhost:" + port);
 
     @BeforeAll
     public static void init(){
