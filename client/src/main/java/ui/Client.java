@@ -15,17 +15,13 @@ import java.util.HashMap;
 public class Client {
     private String authToken = "";
     private final ServerFacade server;
-    private final String serverUrl;
     private State state = State.SIGNEDOUT;
-    private Repl repl;
     private HashMap<Integer, ListResult2> games = new HashMap<>();
     private String color = "";
 
 
-    public Client(String serverUrl, Repl repl){
+    public Client(String serverUrl){
         server = new ServerFacade(serverUrl);
-        this.serverUrl = serverUrl;
-        this.repl = repl;
     }
 
     public String eval(String input){
@@ -275,9 +271,10 @@ public class Client {
                 output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", i + 1));
                 output.append(RESET_BG_COLOR + "\n");
             }
+            output.append(SET_TEXT_COLOR_BLACK);
+            output.append(printHeader(color));
         }
-        output.append(SET_TEXT_COLOR_BLACK);
-        output.append(printHeader(color));
+
 
         output.append(RESET_BG_COLOR);
         return output.toString();

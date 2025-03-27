@@ -11,10 +11,8 @@ import org.junit.jupiter.api.*;
 import ui.State;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ClientTests {
-    private static Server server;
     private static int port;
     private static Client client;
     private static ServerFacade facade;
@@ -23,9 +21,9 @@ public class ClientTests {
 
     @BeforeAll
     public static void init(){
-        server = new Server();
+        Server server = new Server();
         port = server.run(0);
-        client = new Client("http://localhost:" + port, repl);
+        client = new Client("http://localhost:" + port);
         facade = new ServerFacade("http://localhost:" + port);
 
     }

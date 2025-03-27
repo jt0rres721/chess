@@ -9,7 +9,7 @@ public class Main {
         Server server = new Server();
         var port = server.run(0);
         Repl repl = new Repl("http://localhost:" + port);
-        Client client = new Client("http://localhost:" + port, repl);
+        Client client = new Client("http://localhost:" + port);
         ServerFacade facade = new ServerFacade("http://localhost:" + port);
 //        var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
 //        System.out.println("♕ 240 Chess Client: " + piece);
