@@ -56,8 +56,7 @@ public class ServerFacade {
         makeRequest("DELETE", path, null, null, null);
     }
 
-    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String token)
-            throws ServerException {
+    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String token) throws ServerException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();

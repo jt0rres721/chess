@@ -8,27 +8,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ServerException extends Exception {
-  private final int statusCode;
-
-  public ServerException(String message, int statusCode) {
-    super(message);
-    this.statusCode = statusCode;
+  private final int code;
+  public ServerException(String message, int code) {
+      super(message);
+      this.code = code;
   }
 
   public String toJson() {
-    return new Gson().toJson(Map.of("message", getMessage(), "status", statusCode));
+    return new Gson().toJson(Map.of("message", getMessage(), "status", code));
   }
 
   public static ServerException fromJson(InputStream stream) {
-    var map = new Gson().fromJson(new InputStreamReader(stream), HashMap.class);
-    var status = ((Double)map.get("status")).intValue();
-    String message = map.get("message").toString();
+    var mapp = new Gson().fromJson(new InputStreamReader(stream), HashMap.class);
+    var status = ((Double)mapp.get("status")).intValue();
+    String message = mapp.get("message").toString();
     return new ServerException(message, status);
   }
 
-  public int statusCode(){
-    return statusCode;
+
+  public int getCode() {
+    return code;
   }
-
-
 }
+

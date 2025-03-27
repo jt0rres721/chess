@@ -9,6 +9,7 @@ import server.ServerException;
 import server.ServerFacade;
 import static ui.EscapeSequences.*;
 
+
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -124,7 +125,7 @@ public class Client {
         };
     }
 
-    private String gamingClient(String cmd, String... params) throws ServerException{
+    private String gamingClient(String cmd, String... params){
         return switch (cmd) {
             case "print" -> printBoard(color);
             case "leave" -> leaveGame();

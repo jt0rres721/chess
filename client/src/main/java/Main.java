@@ -5,7 +5,7 @@ import ui.Repl;
 
 public class Main {
     public static void main(String[] args) {
-        var port = 8080;
+        var port = "8080";
         Repl repl = new Repl("http://localhost:" + port);
         Client client = new Client("http://localhost:" + port);
         ServerFacade facade = new ServerFacade("http://localhost:" + port);
