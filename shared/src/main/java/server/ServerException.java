@@ -14,9 +14,6 @@ public class ServerException extends Exception {
       this.code = code;
   }
 
-//  public String toJson() {
-//    return new Gson().toJson(Map.of("message", getMessage(), "status", code));
-//  }
 
   public static ServerException fromJson(InputStream stream) {
     var mapp = new Gson().fromJson(new InputStreamReader(stream), HashMap.class);

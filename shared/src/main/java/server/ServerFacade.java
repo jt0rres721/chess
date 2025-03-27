@@ -12,8 +12,8 @@ public class ServerFacade {
     private final String serverUrl;
 
 
-    public ServerFacade(String Url){
-        this.serverUrl = Url;
+    public ServerFacade(String url){
+        this.serverUrl = url;
     }
 
     public RegisterResult register(RegisterRequest request) throws ServerException {

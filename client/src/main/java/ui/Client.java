@@ -42,7 +42,7 @@ public class Client {
 
     }
 
-    public String help(){ //TODO Implement
+    public String help(){
         return String.format("""
                 %s- register <USERNAME> <PASSWORD> <EMAIL> %s - to create an account
                 %s- login <USERNAME> <PASSWORD> %s - to play chess
