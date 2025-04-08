@@ -73,7 +73,19 @@ public class Client {
     }
 
     public String helpG() {
-        return "HelpG";
+        return String.format("""
+                %s- redraw %s - to redraw the board
+                %s- leave %s - to leave the game
+                %s- make move <MOVE> %s - to make a move
+                %s- resign %s -  to forfeit the game
+                %s- highlight <PIECE> %s - to highlight a piece's moves
+                %s- help %s - to display possible commands
+                """, EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
+                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
+                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
+                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
+                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
+                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA);
     }
 
     public String state(){
@@ -127,11 +139,26 @@ public class Client {
 
     private String gamingClient(String cmd, String... params){
         return switch (cmd) {
-            case "print" -> printBoard(color);
+            case "redraw" -> printBoard(color);
             case "leave" -> leaveGame();
-            case "quit" -> "quit";
+            //case "quit" -> "quit";
+            case "make move" -> makeMove();
+            case "resign" -> resign();
+            case "highlight" -> highlightMoves();
             default -> helpG();
         };
+    }
+
+    private String resign(){
+        return "not implemented";
+    }
+
+    private String makeMove(){
+        return "not implemented";
+    }
+
+    private String highlightMoves(){
+        return "not implement";
     }
 
     private String leaveGame(){
