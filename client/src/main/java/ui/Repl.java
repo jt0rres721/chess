@@ -3,14 +3,15 @@ package ui;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
+import ui.websocket.NotificationHandler;
+import websocket.messages.ServerMessage;
 
 
-
-public class Repl {
+public class Repl implements NotificationHandler{
     private final Client client;
 
-    public Repl(String serverUrl){
-        client = new Client(serverUrl);
+    public Repl(String serverUrl) {
+        client = new Client(serverUrl, this);
     }
 
     public void run(){
@@ -41,4 +42,9 @@ public class Repl {
     }
 
 
+    @Override
+    public void notify(ServerMessage message) {
+        System.out.println(SET_TEXT_COLOR_RED + message.getMessage());
+        printPrompt();
+    }
 }

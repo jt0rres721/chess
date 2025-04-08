@@ -13,6 +13,6 @@ public interface AuthDAO {
 
     void clear() throws ServerException;
 
-    AuthData getUser (String user) throws ServerException;
+    String getUser (String token) throws ServerException;
 
 }

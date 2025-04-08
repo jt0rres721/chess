@@ -79,5 +79,9 @@ public class UserService {
         }
     }
 
+    public String verifyUser(String token) throws ServerException {
+        return authDBase.getUser(token);
+    }
+
 
 }

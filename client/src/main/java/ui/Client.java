@@ -7,6 +7,9 @@ import chess.ChessPosition;
 import model.*;
 import server.ServerException;
 import server.ServerFacade;
+import ui.websocket.NotificationHandler;
+import ui.websocket.WebSocketFacade;
+
 import static ui.EscapeSequences.*;
 
 
@@ -19,10 +22,16 @@ public class Client {
     private State state = State.SIGNEDOUT;
     private final HashMap<Integer, ListResult2> games = new HashMap<>();
     private String color = "";
+    private WebSocketFacade ws;
+    private final NotificationHandler notificationHandler;
+    private final String serverUrl;
+    private int currentGameID;
 
 
-    public Client(String serverUrl){
+    public Client(String serverUrl, NotificationHandler notificationHandler){
+        this.notificationHandler = notificationHandler;
         server = new ServerFacade(serverUrl);
+        this.serverUrl = serverUrl;
     }
 
     public String eval(String input){
@@ -71,7 +80,7 @@ public class Client {
                 EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
                 EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA);
     }
-
+//TODO fix multiple parameters
     public String helpG() {
         return String.format("""
                 %s- redraw %s - to redraw the board
@@ -93,7 +102,7 @@ public class Client {
     }
 
     private String register(String... params) throws ServerException {
-        if (params.length >= 3){
+        if (params.length == 3){
             RegisterRequest register = new RegisterRequest(params[0], params[1], params[2]);
             var user = server.register(register);
             authToken = user.authToken();
@@ -105,7 +114,7 @@ public class Client {
     }
 
     private String login(String... params) throws ServerException{
-        if (params.length >= 2){
+        if (params.length == 2){
             LoginRequest login = new LoginRequest(params[0], params[1]);
             var user = server.login(login);
             authToken = user.authToken();
@@ -137,11 +146,10 @@ public class Client {
         };
     }
 
-    private String gamingClient(String cmd, String... params){
+    private String gamingClient(String cmd, String... params) throws ServerException {
         return switch (cmd) {
             case "redraw" -> printBoard(color);
             case "leave" -> leaveGame();
-            //case "quit" -> "quit";
             case "make move" -> makeMove();
             case "resign" -> resign();
             case "highlight" -> highlightMoves();
@@ -161,7 +169,10 @@ public class Client {
         return "not implement";
     }
 
-    private String leaveGame(){
+    private String leaveGame() throws ServerException {
+        ws.leave(authToken, currentGameID);
+        ws = null;
+        currentGameID = -1;
         state = State.SIGNEDIN;
         return "Left game";
     }
@@ -216,7 +227,7 @@ public class Client {
     }
 
     private String join(String... params) throws ServerException {
-        if (params.length >= 2){
+        if (params.length == 2){
             int id;
             try{
                 id = Integer.parseInt(params[0]);
@@ -226,11 +237,14 @@ public class Client {
 
             JoinRequest join = new JoinRequest(params[1].toUpperCase(), id);
             server.joinGame(join, authToken);
+
+            ws = new WebSocketFacade(serverUrl, notificationHandler);
+            ws.connect(authToken,id);
             state = State.GAMING;
             color = params[1];
+            currentGameID = id;  //maybe this isn't needed we'll see
 
-
-            return printBoard(params[1]);
+            return printBoard(color);
         } throw new ServerException("Error: Bad request", 400);
     }
 
