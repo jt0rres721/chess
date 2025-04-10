@@ -285,15 +285,16 @@ public class Client {
             } catch (Exception e){
                 throw new ServerException("Error: Bad request", 400);
             }
+            int gameID = games.get(id).gameID();
 
-            JoinRequest join = new JoinRequest(params[1].toUpperCase(), id);
+            JoinRequest join = new JoinRequest(params[1].toUpperCase(), gameID);
             server.joinGame(join, authToken);
 
             ws = new WebSocketFacade(serverUrl, notificationHandler);
-            ws.connect(authToken,id);
+            ws.connect(authToken,gameID);
             state = State.GAMING;
             color = params[1];
-            currentGameID = id;
+            currentGameID = gameID;
 
             return "Joined game as " + color;
         } throw new ServerException("Error: Bad request", 400);
