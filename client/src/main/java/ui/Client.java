@@ -1,9 +1,6 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 import model.*;
 import server.ServerException;
 import server.ServerFacade;
@@ -17,15 +14,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class Client {
-    private String authToken = "";
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
     private final HashMap<Integer, ListResult2> games = new HashMap<>();
-    private String color = "";
     private WebSocketFacade ws;
     private final NotificationHandler notificationHandler;
     private final String serverUrl;
     private int currentGameID;
+    private String color;
+    private String authToken;
     private ChessGame game;
 
 
@@ -33,6 +30,11 @@ public class Client {
         this.notificationHandler = notificationHandler;
         server = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
+
+        color = "";
+        authToken = "";
+        currentGameID = -1;
+        game = null;
     }
 
     public String eval(String input){
@@ -86,7 +88,7 @@ public class Client {
         return String.format("""
                 %s- redraw %s - to redraw the board
                 %s- leave %s - to leave the game
-                %s- make move <MOVE> %s - to make a move
+                %s- make move <START POSITION> <END POSITION> (i.e. a1 a2) %s - to make a move
                 %s- resign %s -  to forfeit the game
                 %s- highlight <PIECE> %s - to highlight a piece's moves
                 %s- help %s - to display possible commands
@@ -182,12 +184,25 @@ public class Client {
         return "This action will result in forfeit of the game. Are you sure? [yes|no]";
     }
 
-    private String makeMove(String... params){
-        if (authToken.isEmpty() || currentGameID < 0){
-            return "ERROR: No game id or authdata";
+    private String makeMove(String... params) throws ServerException {
+        if(!game.getTeamTurn().toString().toLowerCase().equals(color)){
+            throw new ServerException("Error: Bad request, not your turn", 400);
         }
-        ws.makeMove(authToken, currentGameID);
-        return "not implemented";
+        if (authToken.isEmpty() || currentGameID < 0){
+            throw new ServerException("ERROR: Bad Request, no game id or authdata", 400);
+        }
+        if(params.length != 2){
+            throw new ServerException("Error: bad request", 400);
+        }
+        String start = params[0];
+        String end = params[1];
+
+        ChessPosition startPos = new ChessPosition(start.charAt(1), start.charAt(0) - 'a' + 1);
+        ChessPosition endPos = new ChessPosition(end.charAt(1), end.charAt(0) - 'a' + 1);
+
+        ChessMove move = new ChessMove(startPos, endPos, null); //TODO implement promotion piece
+        ws.makeMove(authToken, currentGameID, move);
+        return "Made move from " + startPos +" to " + endPos;
     }
 
     private String highlightMoves(){
@@ -278,7 +293,7 @@ public class Client {
         this.game = game;
     }
 
-    private String observe(String... params) throws ServerException {
+    private String observe(String... params) throws ServerException {  //TODO Probably create another state for this
         if (params.length == 1){
             int id;
             try{
