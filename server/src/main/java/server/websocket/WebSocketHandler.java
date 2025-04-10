@@ -1,6 +1,8 @@
 package server.websocket;
 
 
+import chess.ChessMove;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import dataaccess.ServerException;
 import org.eclipse.jetty.websocket.api.RemoteEndpoint;
@@ -38,7 +40,7 @@ public class WebSocketHandler {
                 case CONNECT -> connect(session, username, command);
                 case LEAVE -> leaveGame(username);
                 case RESIGN -> resign();
-                case MAKE_MOVE -> makeMove();
+                case MAKE_MOVE -> makeMove(session, username, command);
             }
         } catch (UnauthorizedException ex){
             ServerMessage error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: unauthorized");
@@ -77,8 +79,28 @@ public class WebSocketHandler {
         manager.sendUser(username, loadGame);
     }
 
-    private void makeMove() {
+    private void makeMove(Session session, String username, UserGameCommand command) throws IOException, ServerException {
+        int gameID = command.getGameID();
+        String auth = command.getAuthToken();
+        ChessMove move = command.getMove();
 
+        //TODO make the move here. Add a function to gameservice or the game itself to make a move.
+        var load = new Gson().toJson(gameService.getGame(gameID));
+        var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, load);
+        manager.broadcast(null, loadGame);
+
+        String start = toChessPosition(move.getStartPosition());
+        String end = toChessPosition(move.getEndPosition());
+        var message = String.format("%s made a move from %s to %s", username, start, end);
+        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        manager.broadcast(username, notification);
+    }
+
+    private String toChessPosition(ChessPosition position) {
+        int col = position.getColumn();
+        int row = position.getRow();
+        char file = (char) ('a' + (col - 1));
+        return "" + file + row;
     }
 
 
