@@ -3,6 +3,9 @@ package ui;
 import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
+
+import chess.ChessGame;
+import com.google.gson.Gson;
 import ui.websocket.NotificationHandler;
 import websocket.messages.ServerMessage;
 
@@ -44,7 +47,15 @@ public class Repl implements NotificationHandler{
 
     @Override
     public void notify(ServerMessage message) {
-        System.out.println(SET_TEXT_COLOR_RED + message.getMessage());
-        printPrompt();
+        if (message.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION){
+            System.out.println(SET_TEXT_COLOR_RED + message.getMessage());
+            printPrompt();
+        }
+        if (message.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME){
+            client.addGame(new Gson().fromJson(message.getMessage(), ChessGame.class));
+            System.out.println(client.printBoard());
+            printPrompt();
+        }
+
     }
 }

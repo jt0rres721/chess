@@ -30,7 +30,7 @@ public class MemoryAuthDAO implements AuthDAO{
     }
 
     @Override
-    public String getUser(String token) throws ServerException {
+    public String getUser(String token){
         return null;
     }
 

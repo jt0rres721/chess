@@ -40,7 +40,7 @@ public class Server {
         this.appService = new AppService(gameData, authData, userData);
         this.gameService = new GameService(gameData, authData);
 
-        webSocketHandler = new WebSocketHandler(this.userService);
+        webSocketHandler = new WebSocketHandler(this.userService, this.gameService);
     }
 
     public int run(int desiredPort) {

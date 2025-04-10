@@ -26,6 +26,7 @@ public class Client {
     private final NotificationHandler notificationHandler;
     private final String serverUrl;
     private int currentGameID;
+    private ChessGame game;
 
 
     public Client(String serverUrl, NotificationHandler notificationHandler){
@@ -80,7 +81,6 @@ public class Client {
                 EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
                 EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA);
     }
-//TODO fix multiple parameters
     public String helpG() {
         return String.format("""
                 %s- redraw %s - to redraw the board
@@ -148,7 +148,7 @@ public class Client {
 
     private String gamingClient(String cmd, String... params) throws ServerException {
         return switch (cmd) {
-            case "redraw" -> printBoard(color);
+            case "redraw" -> printBoard();
             case "leave" -> leaveGame();
             case "make move" -> makeMove();
             case "resign" -> resign();
@@ -174,6 +174,7 @@ public class Client {
         ws = null;
         currentGameID = -1;
         state = State.SIGNEDIN;
+        game = null;
         return "Left game";
     }
 
@@ -242,15 +243,34 @@ public class Client {
             ws.connect(authToken,id);
             state = State.GAMING;
             color = params[1];
-            currentGameID = id;  //maybe this isn't needed we'll see
+            currentGameID = id;
 
-            return printBoard(color);
+            return "Joined game as " + color;
         } throw new ServerException("Error: Bad request", 400);
+    }
+
+    public void addGame(ChessGame game){
+        this.game = game;
     }
 
     private String observe(String... params) throws ServerException {
-        if (params.length >= 1){
-            return printBoard("white");
+        if (params.length == 1){
+            int id;
+            try{
+                id = Integer.parseInt(params[0]);
+            } catch (Exception e){
+                throw new ServerException("Error: Bad request", 400);
+            }
+
+            ws = new WebSocketFacade(serverUrl, notificationHandler);
+            ws.connect(authToken, id);
+            state = State.GAMING;
+            color = "observer";
+            currentGameID = id;
+
+            return "Joined game as " + color;
+
+
         } throw new ServerException("Error: Bad request", 400);
     }
 
@@ -259,13 +279,16 @@ public class Client {
 
 
 
-    private String printBoard(String color){
-        ChessBoard board = new ChessBoard();//game.getBoard();
+    public String printBoard(){
+        if (game == null){
+            return "";
+        }
+        ChessBoard board = game.getBoard();
         board.resetBoard();
 
 
         StringBuilder output = new StringBuilder();
-        if (color.equals( "white")) {
+        if (color.equals( "white") || color.equals("observer")) {
             output.append(SET_TEXT_COLOR_BLACK);
             output.append(printHeader(color));
 
