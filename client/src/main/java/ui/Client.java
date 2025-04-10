@@ -158,7 +158,7 @@ public class Client {
         };
     }
 
-    private String resignPrompt(String cmd, String... params){
+    private String resignPrompt(String cmd, String... params) throws ServerException {
         return switch(cmd){
             case "yes" -> forfeitGame();
             case "no" -> noForfeit();
@@ -166,9 +166,10 @@ public class Client {
         };
     }
 
-    private String forfeitGame(){
-        state = State.SIGNEDIN;
-        return "Resigned from game.";
+    private String forfeitGame() throws ServerException {
+        ws.resign(authToken, currentGameID);
+        state = State.GAMING;
+        return "Resigned from the game";
     }
 
     private String noForfeit(){
@@ -181,7 +182,11 @@ public class Client {
         return "This action will result in forfeit of the game. Are you sure? [yes|no]";
     }
 
-    private String makeMove(){
+    private String makeMove(String... params){
+        if (authToken.isEmpty() || currentGameID < 0){
+            return "ERROR: No game id or authdata";
+        }
+        ws.makeMove(authToken, currentGameID);
         return "not implemented";
     }
 

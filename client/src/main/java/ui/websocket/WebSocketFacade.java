@@ -60,6 +60,19 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
+    public void makeMove(String authToken, int gameID) {
+
+    }
+
+    public void resign(String authToken, int gameID) throws ServerException {
+        try{
+            var command = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
+        } catch (IOException e) {
+            throw new ServerException(e.getMessage(), 500);
+        }
+    }
+
 
 
 
