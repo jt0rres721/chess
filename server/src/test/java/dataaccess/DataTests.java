@@ -22,7 +22,7 @@ public class DataTests {
 
     @BeforeEach
     void setUp() throws ServerException {
-        userData = new SQLUserDAO();//new MemoryUserDAO();
+        userData = new SQLUserDAO();
         authData = new SQLAuthDAO();
         gameData = new SQLGameDAO();
     }

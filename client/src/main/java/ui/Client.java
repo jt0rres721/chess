@@ -44,6 +44,7 @@ public class Client {
                 case SIGNEDOUT -> signedOutClient(cmd, params);
                 case SIGNEDIN -> signedInClient(cmd, params);
                 case GAMING -> gamingClient(cmd, params);
+                case RESIGN -> resignPrompt(cmd, params);
             };
 
         }catch (Exception ex){
@@ -157,8 +158,27 @@ public class Client {
         };
     }
 
+    private String resignPrompt(String cmd, String... params){
+        return switch(cmd){
+            case "yes" -> forfeitGame();
+            case "no" -> noForfeit();
+            default -> "This action will result in forfeit of the game. Are you sure? [yes|no]";
+        };
+    }
+
+    private String forfeitGame(){
+        state = State.SIGNEDIN;
+        return "Resigned from game.";
+    }
+
+    private String noForfeit(){
+        state = State.GAMING;
+        return "Continue playing.";
+    }
+
     private String resign(){
-        return "not implemented";
+        state = State.RESIGN;
+        return "This action will result in forfeit of the game. Are you sure? [yes|no]";
     }
 
     private String makeMove(){
