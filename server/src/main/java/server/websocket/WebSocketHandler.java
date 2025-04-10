@@ -27,7 +27,7 @@ public class WebSocketHandler {
     }
 
     @OnWebSocketMessage
-    public void onMessage(Session session, String message){
+    public void onMessage(Session session, String message) throws IOException {
         try{
             UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
             String username = getUsername(command.getAuthToken());
@@ -41,9 +41,12 @@ public class WebSocketHandler {
                 case MAKE_MOVE -> makeMove();
             }
         } catch (UnauthorizedException ex){
-            //sendMessage(session.getRemote(), );
+            ServerMessage error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: unauthorized");
+            manager.send(session, error);
         } catch (Exception ex){
-
+            ServerMessage error = new ServerMessage(ServerMessage.ServerMessageType.ERROR,
+                    "Error: " + ex.getMessage());
+            manager.send(session, error);
         }
     }
 
@@ -71,7 +74,7 @@ public class WebSocketHandler {
         var game = new Gson().toJson(gameService.getGame(gameID));
         var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
         manager.broadcast(username, notification);
-        manager.send(username, loadGame);
+        manager.sendUser(username, loadGame);
     }
 
     private void makeMove() {

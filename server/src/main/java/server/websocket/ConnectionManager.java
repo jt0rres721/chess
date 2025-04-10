@@ -37,9 +37,15 @@ public class ConnectionManager {
         }
     }
 
-    public void send(String username, ServerMessage notification) throws IOException {
+    public void sendUser(String username, ServerMessage notification) throws IOException {
         if (connections.get(username).session.isOpen()){
             connections.get(username).send(new Gson().toJson(notification));
+        }
+    }
+
+    public void send(Session session, ServerMessage notification)throws IOException{
+        if (session.isOpen()){
+            session.getRemote().sendString(new Gson().toJson(notification));
         }
     }
 }
