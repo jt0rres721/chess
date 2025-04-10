@@ -88,7 +88,7 @@ public class Client {
         return String.format("""
                 %s- redraw %s - to redraw the board
                 %s- leave %s - to leave the game
-                %s- make move <START POSITION> <END POSITION> (i.e. a1 a2) %s - to make a move
+                %s- move <START POSITION> <END POSITION> %s - to make a move  (i.e. a1 a2)
                 %s- resign %s -  to forfeit the game
                 %s- highlight <PIECE> %s - to highlight a piece's moves
                 %s- help %s - to display possible commands
@@ -153,7 +153,7 @@ public class Client {
         return switch (cmd) {
             case "redraw" -> printBoard();
             case "leave" -> leaveGame();
-            case "make move" -> makeMove();
+            case "move" -> makeMove(params);
             case "resign" -> resign();
             case "highlight" -> highlightMoves();
             default -> helpG();
@@ -191,19 +191,29 @@ public class Client {
         if (authToken.isEmpty() || currentGameID < 0){
             throw new ServerException("ERROR: Bad Request, no game id or authdata", 400);
         }
+
+        System.out.println("Params length: " + params.length);
+        System.out.println("Params: " + Arrays.toString(params));
         if(params.length != 2){
             throw new ServerException("Error: bad request", 400);
         }
         String start = params[0];
         String end = params[1];
 
-        ChessPosition startPos = new ChessPosition(start.charAt(1), start.charAt(0) - 'a' + 1);
-        ChessPosition endPos = new ChessPosition(end.charAt(1), end.charAt(0) - 'a' + 1);
+        ChessPosition startPos = toPosition(start);
+        ChessPosition endPos = toPosition(end);
 
         ChessMove move = new ChessMove(startPos, endPos, null); //TODO implement promotion piece
         ws.makeMove(authToken, currentGameID, move);
         return "Made move from " + startPos +" to " + endPos;
     }
+
+    private ChessPosition toPosition(String notation) {
+        int col = notation.charAt(0) - 'a' + 1;
+        int row = Integer.parseInt(notation.substring(1));  // handles ranks 1–8, and even 10 if needed
+        return new ChessPosition(row, col);
+    }
+
 
     private String highlightMoves(){
         return "not implement";
