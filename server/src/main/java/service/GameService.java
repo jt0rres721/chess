@@ -1,5 +1,6 @@
 package service;
 
+import chess.ChessMove;
 import dataaccess.AuthDAO;
 import dataaccess.ServerException;
 import dataaccess.GameDAO;
@@ -49,6 +50,10 @@ public class GameService {
 
     public GameData getGame(int gameID) throws ServerException {
         return gameData.getGame(gameID);
+    }
+
+    public void makeMove(ChessMove move, int gameID) throws ServerException {
+        gameData.makeMove(move, gameID);
     }
 
     public GameData joinGame(String token, int gameID, String playerColor) throws ServerException {
