@@ -1,6 +1,8 @@
 package dataaccess;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import model.GameData;
 
@@ -163,6 +165,28 @@ public class SQLGameDAO implements GameDAO{
     private GameData readGame(ResultSet rs) throws SQLException {
         var json = rs.getString("json");
         return new Gson().fromJson(json, GameData.class);
+    }
+
+    @Override
+    public void makeMove(ChessMove move, int gameID) throws ServerException {
+        var data = getGame(gameID);
+        ChessGame game = data.game();
+
+        try{
+            game.makeMove(move);
+        } catch (InvalidMoveException e) {
+            throw new ServerException("Error: " + e.getMessage(), 500);
+        }
+
+        var statement = "UPDATE games SET game = ? WHERE gameID = ?";
+        executeUpdate(statement, game,gameID);
+
+        GameData game2 = getGame(gameID);
+        var second = "UPDATE games SET json = ? WHERE gameID = ?";
+        var json = new Gson().toJson(new GameData(game2.gameID(), game2.whiteUsername(), game2.blackUsername(),
+                game2.gameName(), game2.game()));
+        executeUpdate(second, json, gameID);
+
     }
 
 
