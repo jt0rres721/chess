@@ -85,6 +85,8 @@ public class WebSocketHandler {
         ChessMove move = command.getMove();
 
         //TODO make the move here. Add a function to gameservice or the game itself to make a move.
+        gameService.makeMove(move, gameID);
+
         var load = new Gson().toJson(gameService.getGame(gameID));
         var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, load);
         manager.broadcast(null, loadGame);

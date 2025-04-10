@@ -124,6 +124,8 @@ public class Client {
 
             state = State.SIGNEDIN;
 
+            list();
+
             return String.format("Logged in as %s.", user.username());
         } throw new ServerException("Error: Bad request", 400);
     }
@@ -250,6 +252,8 @@ public class Client {
             CreateRequest create = new CreateRequest(params[0]);
             server.createGame(create, authToken);
 
+            list();
+
             return String.format("Created game called %s", params[0]);
         } throw new ServerException("Error: Bad request", 400);
     }
@@ -312,12 +316,13 @@ public class Client {
             } catch (Exception e){
                 throw new ServerException("Error: Bad request", 400);
             }
+            int gameID = games.get(id).gameID();
 
             ws = new WebSocketFacade(serverUrl, notificationHandler);
-            ws.connect(authToken, id);
+            ws.connect(authToken, gameID);
             state = State.GAMING;
             color = "observer";
-            currentGameID = id;
+            currentGameID = gameID;
 
             return "Joined game as " + color;
 
