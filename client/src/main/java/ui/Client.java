@@ -207,7 +207,7 @@ public class Client {
 
         ChessMove move = new ChessMove(startPos, endPos, null); //TODO implement promotion piece
         ws.makeMove(authToken, currentGameID, move);
-        return "Made move from " + startPos +" to " + endPos;
+        return "Made move from " + start +" to " + end;
     }
 
     private ChessPosition toPosition(String notation) {
@@ -337,10 +337,9 @@ public class Client {
 
     public String printBoard(){
         if (game == null){
-            return "";
+            return "No game";
         }
         ChessBoard board = game.getBoard();
-        board.resetBoard();
 
 
         StringBuilder output = new StringBuilder();

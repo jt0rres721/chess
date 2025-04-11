@@ -2,6 +2,7 @@ package dataaccess;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPosition;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import model.GameData;
@@ -93,7 +94,26 @@ public class SQLGameDAO implements GameDAO{
                 }
             }
         } catch (Exception e){
-            throw new ServerException(String.format("Unable to read data: %s", e.getMessage()), 500);
+            throw new ServerException(String.format("Unable to read data from gameData: %s", e.getMessage()), 500);
+        }
+
+        return null;
+    }
+
+    @Override
+    public ChessGame getChess(int gameID) throws ServerException {
+        try (var conn = DatabaseManager.getConnection()){
+            var statement = "SELECT gameid, game FROM games WHERE gameid=?";
+            try (var ps = conn.prepareStatement(statement)){
+                ps.setInt(1, gameID);
+                try (var rs = ps.executeQuery()){
+                    if (rs.next()){
+                        return new Gson().fromJson(rs.getString("game"), ChessGame.class);
+                    }
+                }
+            }
+        } catch (Exception e){
+            throw new ServerException(String.format("Unable to read data from chess file: %s", e.getMessage()), 500);
         }
 
         return null;
@@ -169,17 +189,17 @@ public class SQLGameDAO implements GameDAO{
 
     @Override
     public void makeMove(ChessMove move, int gameID) throws ServerException {
-        var data = getGame(gameID);
-        ChessGame game = data.game();
-
+        var game = getChess(gameID);
+        System.out.println("Successfully pulled chess game in make move");
         try{
             game.makeMove(move);
         } catch (InvalidMoveException e) {
-            throw new ServerException("Error: " + e.getMessage(), 500);
+            throw new ServerException("Error: Invalid move, " + e.getMessage(), 500);
         }
 
         var statement = "UPDATE games SET game = ? WHERE gameID = ?";
-        executeUpdate(statement, game,gameID);
+        var jgame = new Gson().toJson(game);
+        executeUpdate(statement, jgame,gameID);
 
         GameData game2 = getGame(gameID);
         var second = "UPDATE games SET json = ? WHERE gameID = ?";

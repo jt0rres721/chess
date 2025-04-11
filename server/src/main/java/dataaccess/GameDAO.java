@@ -1,5 +1,6 @@
 package dataaccess;
 
+import chess.ChessGame;
 import chess.ChessMove;
 import model.GameData;
 
@@ -18,4 +19,6 @@ public interface GameDAO {
     GameData joinGame(int gameID, String playerColor, String username) throws ServerException;
 
     void makeMove(ChessMove move, int id) throws ServerException;
+
+    ChessGame getChess(int gameID)throws ServerException;
 }

@@ -1,5 +1,6 @@
 package service;
 
+import chess.ChessGame;
 import chess.ChessMove;
 import dataaccess.AuthDAO;
 import dataaccess.ServerException;
@@ -50,6 +51,11 @@ public class GameService {
 
     public GameData getGame(int gameID) throws ServerException {
         return gameData.getGame(gameID);
+    }
+
+
+    public ChessGame getChess(int gameID) throws ServerException{
+        return gameData.getChess(gameID);
     }
 
     public void makeMove(ChessMove move, int gameID) throws ServerException {

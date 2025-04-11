@@ -73,7 +73,7 @@ public class WebSocketHandler {
         manager.add(username, session);
         var message = String.format("%s joined the game", username);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-        var game = new Gson().toJson(gameService.getGame(gameID));
+        var game = new Gson().toJson(gameService.getChess(gameID));
         var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
         manager.broadcast(username, notification);
         manager.sendUser(username, loadGame);
@@ -87,7 +87,7 @@ public class WebSocketHandler {
         //TODO make the move here. Add a function to gameservice or the game itself to make a move.
         gameService.makeMove(move, gameID);
 
-        var load = new Gson().toJson(gameService.getGame(gameID));
+        var load = new Gson().toJson(gameService.getChess(gameID));
         var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, load);
         manager.broadcast(null, loadGame);
 

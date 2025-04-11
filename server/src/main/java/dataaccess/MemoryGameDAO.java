@@ -67,5 +67,10 @@ public class MemoryGameDAO implements GameDAO{
 
     }
 
+    @Override
+    public ChessGame getChess(int gameID) throws ServerException {
+        return null;
+    }
+
 
 }
