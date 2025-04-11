@@ -71,7 +71,18 @@ public class WebSocketHandler {
     private void connect(Session session, String username, UserGameCommand command) throws IOException, ServerException {
         int gameID = command.getGameID();
         manager.add(username, session);
-        var message = String.format("%s joined the game", username);
+
+        var file = gameService.getGame(gameID);
+        String playerType;
+        if(username.equals(file.whiteUsername())){
+            playerType = "white";
+        }else if(username.equals(file.blackUsername())){
+            playerType = "black";
+        } else {
+            playerType = "an observer";
+        }
+
+        var message = String.format("%s joined the game as %s", username, playerType);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         var game = new Gson().toJson(gameService.getChess(gameID));
         var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
