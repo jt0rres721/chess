@@ -47,6 +47,7 @@ public class Client {
                 case SIGNEDIN -> signedInClient(cmd, params);
                 case GAMING -> gamingClient(cmd, params);
                 case RESIGN -> resignPrompt(cmd, params);
+                case OBSERVING -> observingClient(cmd, params);
             };
 
         }catch (Exception ex){
@@ -308,6 +309,13 @@ public class Client {
         this.game = game;
     }
 
+    private String observingClient(String cmd, String... params) throws ServerException {
+        return switch(cmd){
+            case "leave" -> leaveGame();
+            default-> "Type 'leave' to leave game";
+        };
+    }
+
     private String observe(String... params) throws ServerException {  //TODO Probably create another state for this
         if (params.length == 1){
             int id;
@@ -324,7 +332,9 @@ public class Client {
             color = "observer";
             currentGameID = gameID;
 
-            return "Joined game as " + color;
+            state = State.OBSERVING;
+
+            return "Joined game as an observer";
 
 
         } throw new ServerException("Error: Bad request", 400);
