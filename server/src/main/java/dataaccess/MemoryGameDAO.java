@@ -62,14 +62,16 @@ public class MemoryGameDAO implements GameDAO{
 
     }
 
-    @Override
-    public void makeMove(ChessMove move, int id) throws ServerException {
 
-    }
 
     @Override
     public ChessGame getChess(int gameID) throws ServerException {
         return null;
+    }
+
+    @Override
+    public void updateGame(ChessGame game, int gameID) throws ServerException {
+
     }
 
 

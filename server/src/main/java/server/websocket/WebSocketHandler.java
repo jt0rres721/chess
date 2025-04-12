@@ -39,7 +39,7 @@ public class WebSocketHandler {
             switch (command.getCommandType()){
                 case CONNECT -> connect(session, username, command);
                 case LEAVE -> leaveGame(username);
-                case RESIGN -> resign();
+                case RESIGN -> resign(session, username, command);
                 case MAKE_MOVE -> makeMove(session, username, command);
             }
         } catch (UnauthorizedException ex){
@@ -124,7 +124,18 @@ public class WebSocketHandler {
     }
 
 
-    private void resign(){}
+    private void resign(Session session, String username, UserGameCommand command) throws ServerException, IOException {
+        int gameID = command.getGameID();
+        gameService.endGame(gameID);
+
+        var load = new Gson().toJson(gameService.getChess(gameID));
+        var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, load);
+        manager.broadcast(username, loadGame);
+
+        var message = username + " resigned from the game";
+        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        manager.broadcast(username, notification);
+    }
 
 
     private void sendMessage(RemoteEndpoint remote, String message){}

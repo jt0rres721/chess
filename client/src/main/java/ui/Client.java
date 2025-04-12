@@ -58,6 +58,15 @@ public class Client {
 
     }
 
+
+    private String signedOutClient(String cmd, String... params) throws ServerException {
+        return switch (cmd) {
+            case "register" -> register(params);
+            case "login" -> login(params);
+            case "quit" -> "quit";
+            default -> help();
+        };
+    }
     public String help(){
         return String.format("""
                 %s- register <USERNAME> <PASSWORD> <EMAIL> %s - to create an account
@@ -69,7 +78,43 @@ public class Client {
                 EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
                 EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA);
     }
+    private String register(String... params) throws ServerException {
+        if (params.length == 3){
+            RegisterRequest register = new RegisterRequest(params[0], params[1], params[2]);
+            var user = server.register(register);
+            authToken = user.authToken();
 
+            state = State.SIGNEDIN;
+
+            return String.format("Registered as %s.", user.username());
+        } throw new ServerException("Error: Bad request", 400);
+    }
+    private String login(String... params) throws ServerException{
+        if (params.length == 2){
+            LoginRequest login = new LoginRequest(params[0], params[1]);
+            var user = server.login(login);
+            authToken = user.authToken();
+
+            state = State.SIGNEDIN;
+
+            list();
+
+            return String.format("Logged in as %s.", user.username());
+        } throw new ServerException("Error: Bad request", 400);
+    }
+
+
+    private String signedInClient(String cmd, String... params) throws ServerException{
+        return switch (cmd) {
+            case "logout" -> logout();
+            case "create" -> create(params);
+            case "list" -> list();
+            case "join" -> join(params);
+            case "observe" -> observe(params);
+            case "quit" -> logoutAndQuit();
+            default -> helpIn();
+        };
+    }
     public String helpIn() {
         return String.format("""
                 %s- create <NAME> %s - to create a game
@@ -87,6 +132,110 @@ public class Client {
                 EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
                 EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA);
     }
+    private String create(String... params) throws ServerException {
+        if (params.length >= 1){
+            CreateRequest create = new CreateRequest(params[0]);
+            server.createGame(create, authToken);
+
+            list();
+
+            return String.format("Created game called %s", params[0]);
+        } throw new ServerException("Error: Bad request", 400);
+    }
+    private String list() throws ServerException {
+        games.clear();
+        var result = server.listGames(authToken);
+        var gameList = result.games();
+
+        StringBuilder output = new StringBuilder();
+
+        if (gameList.isEmpty()){
+            return "No open games \n";
+        } else {
+
+            for (int i = 1; i <= result.list().size(); i++) {
+                games.put(i, gameList.get(i - 1));
+                String white = (games.get(i).whiteUsername() != null) ? games.get(i).whiteUsername() : "";
+                String black = (games.get(i).blackUsername() != null) ? games.get(i).blackUsername() : "";
+                output.append(String.format("%d: Name: %s, White: %s, Black: %s \n", i, games.get(i).gameName(),
+                        white, black));
+            }
+        }
+
+        return output.toString();
+    }
+    private String join(String... params) throws ServerException {
+        if (params.length == 2){
+            int id;
+            try{
+                id = Integer.parseInt(params[0]);
+            } catch (Exception e){
+                throw new ServerException("Error: Bad request", 400);
+            }
+            int gameID = games.get(id).gameID();
+
+            JoinRequest join = new JoinRequest(params[1].toUpperCase(), gameID);
+            server.joinGame(join, authToken);
+
+            ws = new WebSocketFacade(serverUrl, notificationHandler);
+            ws.connect(authToken,gameID);
+            state = State.GAMING;
+            color = params[1];
+            currentGameID = gameID;
+
+            return "Joined game as " + color;
+        } throw new ServerException("Error: Bad request", 400);
+    }
+    private String observe(String... params) throws ServerException {
+        if (params.length == 1){
+            int id;
+            try{
+                id = Integer.parseInt(params[0]);
+            } catch (Exception e){
+                throw new ServerException("Error: Bad request", 400);
+            }
+            int gameID = games.get(id).gameID();
+
+            ws = new WebSocketFacade(serverUrl, notificationHandler);
+            ws.connect(authToken, gameID);
+            state = State.GAMING;
+            color = "observer";
+            currentGameID = gameID;
+
+            state = State.OBSERVING;
+
+            return "Joined game as an observer";
+
+
+        } throw new ServerException("Error: Bad request", 400);
+    }
+    private String logout() throws ServerException {
+        server.logout(authToken);
+        authToken = "";
+        state = State.SIGNEDOUT;
+
+        return "Logged out";
+
+    }
+    private String logoutAndQuit() throws ServerException{
+        server.logout(authToken);
+        authToken = "";
+        state = State.SIGNEDOUT;
+
+        return "quit";
+    }
+
+
+    private String gamingClient(String cmd, String... params) throws ServerException {
+        return switch (cmd) {
+            case "redraw" -> printBoard(null);
+            case "leave" -> leaveGame();
+            case "move" -> makeMove(params);
+            case "resign" -> resign();
+            case "highlight" -> highlightMoves(params);
+            default -> helpG();
+        };
+    }
     public String helpG() {
         return String.format("""
                 %s- redraw %s - to redraw the board
@@ -102,102 +251,18 @@ public class Client {
                 EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
                 EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA);
     }
-
-    public String state(){
-        return state.toString();
+    private String leaveGame() throws ServerException {
+        ws.leave(authToken, currentGameID);
+        ws = null;
+        currentGameID = -1;
+        state = State.SIGNEDIN;
+        game = null;
+        return "Left game";
     }
-
-    private String register(String... params) throws ServerException {
-        if (params.length == 3){
-            RegisterRequest register = new RegisterRequest(params[0], params[1], params[2]);
-            var user = server.register(register);
-            authToken = user.authToken();
-
-            state = State.SIGNEDIN;
-
-            return String.format("Registered as %s.", user.username());
-        } throw new ServerException("Error: Bad request", 400);
-    }
-
-    private String login(String... params) throws ServerException{
-        if (params.length == 2){
-            LoginRequest login = new LoginRequest(params[0], params[1]);
-            var user = server.login(login);
-            authToken = user.authToken();
-
-            state = State.SIGNEDIN;
-
-            list();
-
-            return String.format("Logged in as %s.", user.username());
-        } throw new ServerException("Error: Bad request", 400);
-    }
-
-    private String signedOutClient(String cmd, String... params) throws ServerException {
-        return switch (cmd) {
-            case "register" -> register(params);
-            case "login" -> login(params);
-            case "quit" -> "quit";
-            default -> help();
-        };
-    }
-
-    private String signedInClient(String cmd, String... params) throws ServerException{
-        return switch (cmd) {
-            case "logout" -> logout();
-            case "create" -> create(params);
-            case "list" -> list();
-            case "join" -> join(params);
-            case "observe" -> observe(params);
-            case "quit" -> logoutAndQuit();
-            default -> helpIn();
-        };
-    }
-
-    private String gamingClient(String cmd, String... params) throws ServerException {
-        return switch (cmd) {
-            case "redraw" -> printBoard(null);
-            case "leave" -> leaveGame();
-            case "move" -> makeMove(params);
-            case "resign" -> resign();
-            case "highlight" -> highlightMoves(params);
-            default -> helpG();
-        };
-    }
-
-    private String observingClient(String cmd) throws ServerException {
-        if(cmd.equals("leave")){
-            return leaveGame();
-        } else {
-            return "Enter 'leave' to leave game";
-        }
-    }
-
-    private String resignPrompt(String cmd, String... params) throws ServerException {
-        return switch(cmd){
-            case "yes" -> forfeitGame();
-            case "no" -> noForfeit();
-            default -> "This action will result in forfeit of the game. Are you sure? [yes|no]";
-        };
-    }
-
-    private String forfeitGame() throws ServerException {
-        ws.resign(authToken, currentGameID);
-        state = State.GAMING;
-        return "Resigned from the game";
-    }
-
-    private String noForfeit(){
-        state = State.GAMING;
-        return "Continue playing.";
-    }
-
-    private String resign(){
-        state = State.RESIGN;
-        return "This action will result in forfeit of the game. Are you sure? [yes|no]";
-    }
-
     private String makeMove(String... params) throws ServerException {
+        if(game.getState() == GameStatus.OVER){
+            return "Game has ended. No more moves allowed";
+        }
         if(!game.getTeamTurn().toString().toLowerCase().equals(color)){
             throw new ServerException("Error: Bad request, not your turn", 400);
         }
@@ -223,14 +288,10 @@ public class Client {
         ws.makeMove(authToken, currentGameID, move);
         return "Made move from " + start +" to " + end;
     }
-
-    private ChessPosition toPosition(String notation) {
-        int col = notation.charAt(0) - 'a' + 1;
-        int row = Integer.parseInt(notation.substring(1));  // handles ranks 1–8, and even 10 if needed
-        return new ChessPosition(row, col);
+    private String resign(){
+        state = State.RESIGN;
+        return "This action will result in forfeit of the game. Are you sure? [yes|no]";
     }
-
-
     private String highlightMoves(String... params) throws ServerException {
         if (params.length != 1){
             throw new ServerException("Error: bad request", 400);
@@ -239,116 +300,44 @@ public class Client {
         return printBoard(position);
     }
 
-    private String leaveGame() throws ServerException {
-        ws.leave(authToken, currentGameID);
-        ws = null;
-        currentGameID = -1;
-        state = State.SIGNEDIN;
-        game = null;
-        return "Left game";
+
+    private String resignPrompt(String cmd, String... params) throws ServerException {
+        return switch(cmd){
+            case "yes" -> forfeitGame();
+            case "no" -> noForfeit();
+            default -> "This action will result in forfeit of the game. Are you sure? [yes|no]";
+        };
+    }
+    private String forfeitGame() throws ServerException {
+        ws.resign(authToken, currentGameID);
+        state = State.GAMING;
+        return "Resigned from the game";
+    }
+    private String noForfeit(){
+        state = State.GAMING;
+        return "Continue playing.";
     }
 
-    private String logout() throws ServerException {
-        server.logout(authToken);
-        authToken = "";
-        state = State.SIGNEDOUT;
 
-        return "Logged out";
-
-    }
-
-    private String logoutAndQuit() throws ServerException{
-        server.logout(authToken);
-        authToken = "";
-        state = State.SIGNEDOUT;
-
-        return "quit";
-    }
-
-    private String create(String... params) throws ServerException {
-        if (params.length >= 1){
-            CreateRequest create = new CreateRequest(params[0]);
-            server.createGame(create, authToken);
-
-            list();
-
-            return String.format("Created game called %s", params[0]);
-        } throw new ServerException("Error: Bad request", 400);
-    }
-
-    private String list() throws ServerException {
-        games.clear();
-        var result = server.listGames(authToken);
-        var gameList = result.games();
-
-        StringBuilder output = new StringBuilder();
-
-        if (gameList.isEmpty()){
-            return "No open games \n";
+    private String observingClient(String cmd) throws ServerException {
+        if(cmd.equals("leave")){
+            return leaveGame();
         } else {
-
-            for (int i = 1; i <= result.list().size(); i++) {
-                games.put(i, gameList.get(i - 1));
-                String white = (games.get(i).whiteUsername() != null) ? games.get(i).whiteUsername() : "";
-                String black = (games.get(i).blackUsername() != null) ? games.get(i).blackUsername() : "";
-                output.append(String.format("%d: Name: %s, White: %s, Black: %s \n", i, games.get(i).gameName(),
-                        white, black));
-            }
+            return "Enter 'leave' to leave game";
         }
-
-        return output.toString();
     }
 
-    private String join(String... params) throws ServerException {
-        if (params.length == 2){
-            int id;
-            try{
-                id = Integer.parseInt(params[0]);
-            } catch (Exception e){
-                throw new ServerException("Error: Bad request", 400);
-            }
-            int gameID = games.get(id).gameID();
 
-            JoinRequest join = new JoinRequest(params[1].toUpperCase(), gameID);
-            server.joinGame(join, authToken);
-
-            ws = new WebSocketFacade(serverUrl, notificationHandler);
-            ws.connect(authToken,gameID);
-            state = State.GAMING;
-            color = params[1];
-            currentGameID = gameID;
-
-            return "Joined game as " + color;
-        } throw new ServerException("Error: Bad request", 400);
+    private ChessPosition toPosition(String notation) {
+        int col = notation.charAt(0) - 'a' + 1;
+        int row = Integer.parseInt(notation.substring(1));  // handles ranks 1–8, and even 10 if needed
+        return new ChessPosition(row, col);
     }
-
+    public String state(){
+        return state.toString();
+    }
     public void addGame(ChessGame game){
         this.game = game;
-    }
-
-
-    private String observe(String... params) throws ServerException {
-        if (params.length == 1){
-            int id;
-            try{
-                id = Integer.parseInt(params[0]);
-            } catch (Exception e){
-                throw new ServerException("Error: Bad request", 400);
-            }
-            int gameID = games.get(id).gameID();
-
-            ws = new WebSocketFacade(serverUrl, notificationHandler);
-            ws.connect(authToken, gameID);
-            state = State.GAMING;
-            color = "observer";
-            currentGameID = gameID;
-
-            state = State.OBSERVING;
-
-            return "Joined game as an observer";
-
-
-        } throw new ServerException("Error: Bad request", 400);
     }
 
 
@@ -364,8 +353,8 @@ public class Client {
 
         //Highlight piece shenanigans
         boolean highlighting = false;
-        ChessPiece lightPiece = null;
-        Collection<ChessMove> lightMoves = new ArrayList<>();
+        ChessPiece lightPiece;
+        Collection<ChessMove> lightMoves;
         Collection<ChessPosition> lightEndPositions = new ArrayList<>();
 
         if(highlight != null){

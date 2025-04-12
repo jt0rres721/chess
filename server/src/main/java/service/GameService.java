@@ -2,6 +2,7 @@ package service;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.InvalidMoveException;
 import dataaccess.AuthDAO;
 import dataaccess.ServerException;
 import dataaccess.GameDAO;
@@ -59,7 +60,14 @@ public class GameService {
     }
 
     public void makeMove(ChessMove move, int gameID) throws ServerException {
-        gameData.makeMove(move, gameID);
+        var game = getChess(gameID);
+        try{
+            game.makeMove(move);
+        } catch (InvalidMoveException e) {
+            throw new ServerException("Error: Invalid move, " + e.getMessage(), 500);
+        }
+
+        gameData.updateGame(game, gameID);
     }
 
     public GameData joinGame(String token, int gameID, String playerColor) throws ServerException {
@@ -88,6 +96,12 @@ public class GameService {
 
         return gameData.joinGame(gameID, playerColor, username);
 
+    }
+
+    public void endGame(int gameID) throws ServerException {
+        var game = getChess(gameID);
+        game.endGame();
+        gameData.updateGame(game, gameID);
     }
 
 

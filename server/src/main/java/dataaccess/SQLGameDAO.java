@@ -2,7 +2,6 @@ package dataaccess;
 
 import chess.ChessGame;
 import chess.ChessMove;
-import chess.ChessPosition;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import model.GameData;
@@ -188,15 +187,7 @@ public class SQLGameDAO implements GameDAO{
     }
 
     @Override
-    public void makeMove(ChessMove move, int gameID) throws ServerException {
-        var game = getChess(gameID);
-        System.out.println("Successfully pulled chess game in make move");
-        try{
-            game.makeMove(move);
-        } catch (InvalidMoveException e) {
-            throw new ServerException("Error: Invalid move, " + e.getMessage(), 500);
-        }
-
+    public void updateGame(ChessGame game, int gameID) throws ServerException {
         var statement = "UPDATE games SET game = ? WHERE gameID = ?";
         var jgame = new Gson().toJson(game);
         executeUpdate(statement, jgame,gameID);

@@ -18,7 +18,7 @@ public interface GameDAO {
 
     GameData joinGame(int gameID, String playerColor, String username) throws ServerException;
 
-    void makeMove(ChessMove move, int id) throws ServerException;
-
     ChessGame getChess(int gameID)throws ServerException;
+
+    void updateGame(ChessGame game, int gameID) throws ServerException;
 }
