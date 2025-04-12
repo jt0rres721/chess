@@ -3,17 +3,13 @@ package chess;
 import java.util.Collection;
 
 
-/**
- * For a class that can manage a chess game, making moves on a board
- * <p>
- * Note: You can add to this class, but you may not alter
- * signature of the existing methods.
- */
 public class ChessGame {
     private ChessBoard myBoard = new ChessBoard();
     private TeamColor teamTurn = TeamColor.WHITE;
+    private GameStatus state;
 
     public ChessGame() {
+        state = GameStatus.ONGOING;
         myBoard.resetBoard();
     }
 
@@ -138,5 +134,13 @@ public class ChessGame {
 
     public ChessBoard getBoard() {
         return myBoard;
+    }
+
+    public void endGame(){
+        state = GameStatus.OVER;
+    }
+
+    public GameStatus getState(){
+        return state;
     }
 }
