@@ -10,7 +10,9 @@ import ui.websocket.WebSocketFacade;
 import static ui.EscapeSequences.*;
 
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 
 public class Client {
@@ -47,7 +49,7 @@ public class Client {
                 case SIGNEDIN -> signedInClient(cmd, params);
                 case GAMING -> gamingClient(cmd, params);
                 case RESIGN -> resignPrompt(cmd, params);
-                case OBSERVING -> observingClient(cmd, params);
+                case OBSERVING -> observingClient(cmd);
             };
 
         }catch (Exception ex){
@@ -91,7 +93,7 @@ public class Client {
                 %s- leave %s - to leave the game
                 %s- move <START POSITION> <END POSITION> %s - to make a move  (i.e. a1 a2)
                 %s- resign %s -  to forfeit the game
-                %s- highlight <PIECE> %s - to highlight a piece's moves
+                %s- highlight <POSITION> %s - to highlight the moves of a piece
                 %s- help %s - to display possible commands
                 """, EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
                 EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
@@ -154,13 +156,21 @@ public class Client {
 
     private String gamingClient(String cmd, String... params) throws ServerException {
         return switch (cmd) {
-            case "redraw" -> printBoard();
+            case "redraw" -> printBoard(null);
             case "leave" -> leaveGame();
             case "move" -> makeMove(params);
             case "resign" -> resign();
-            case "highlight" -> highlightMoves();
+            case "highlight" -> highlightMoves(params);
             default -> helpG();
         };
+    }
+
+    private String observingClient(String cmd) throws ServerException {
+        if(cmd.equals("leave")){
+            return leaveGame();
+        } else {
+            return "Enter 'leave' to leave game";
+        }
     }
 
     private String resignPrompt(String cmd, String... params) throws ServerException {
@@ -195,10 +205,13 @@ public class Client {
             throw new ServerException("ERROR: Bad Request, no game id or authdata", 400);
         }
 
-        System.out.println("Params length: " + params.length);
-        System.out.println("Params: " + Arrays.toString(params));
-        if(params.length != 2){
+
+        if(params.length != 2 ){
             throw new ServerException("Error: bad request", 400);
+        }
+
+        if(params[0].length() != 2 || params[1].length() != 2){
+            throw new ServerException("Error: bad request, enter <COLUMN LETTER><ROW NUMBER>", 400);
         }
         String start = params[0];
         String end = params[1];
@@ -218,8 +231,12 @@ public class Client {
     }
 
 
-    private String highlightMoves(){
-        return "not implement";
+    private String highlightMoves(String... params) throws ServerException {
+        if (params.length != 1){
+            throw new ServerException("Error: bad request", 400);
+        }
+        ChessPosition position = toPosition(params[0]);
+        return printBoard(position);
     }
 
     private String leaveGame() throws ServerException {
@@ -309,14 +326,8 @@ public class Client {
         this.game = game;
     }
 
-    private String observingClient(String cmd, String... params) throws ServerException {
-        return switch(cmd){
-            case "leave" -> leaveGame();
-            default-> "Type 'leave' to leave game";
-        };
-    }
 
-    private String observe(String... params) throws ServerException {  //TODO Probably create another state for this
+    private String observe(String... params) throws ServerException {
         if (params.length == 1){
             int id;
             try{
@@ -345,13 +356,32 @@ public class Client {
 
 
 
-    public String printBoard(){
+    public String printBoard(ChessPosition highlight){
         if (game == null){
             return "No game";
         }
         ChessBoard board = game.getBoard();
 
+        //Highlight piece shenanigans
+        boolean highlighting = false;
+        ChessPiece lightPiece = null;
+        Collection<ChessMove> lightMoves = new ArrayList<>();
+        Collection<ChessPosition> lightEndPositions = new ArrayList<>();
 
+        if(highlight != null){
+            if (board.getPiece(highlight)==null){
+                return "Error: no such piece";
+            }
+            highlighting = true;
+            lightPiece = board.getPiece(highlight);
+            lightMoves = lightPiece.pieceMoves(board, highlight);
+            for (ChessMove mv : lightMoves){
+                lightEndPositions.add(mv.getEndPosition());
+            }
+
+        }
+
+        boolean lightSquare = false;
         StringBuilder output = new StringBuilder();
         if (color.equals( "white") || color.equals("observer")) {
             output.append(SET_TEXT_COLOR_BLACK);
@@ -362,19 +392,25 @@ public class Client {
                 for (int j = 0; j < 8; j++) {
                     ChessPosition position = new ChessPosition(8-i,j+1);
                     ChessPiece piece = board.getPiece(position);
-                    if (piece == null){
-                        output.append(printSquare(8-i, j+1));
-                    } else {
-                        output.append(printPiece(piece, 8 - i, j + 1));
+
+                    if (highlighting){
+                        if (lightEndPositions.contains(position)){
+                            lightSquare = true;
+                        }
                     }
 
+                    if (piece == null){
+                        output.append(printSquare(8-i, j+1, lightSquare));
+                    } else {
+                        output.append(printPiece(piece, 8 - i, j + 1, lightSquare));
+                    }
 
+                    lightSquare = false;
 
                 }
                 output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", 8 - i));
                 output.append(RESET_BG_COLOR + "\n");
             }
-            //output.append(SET_TEXT_COLOR_BLACK);
             output.append(printHeader(color));
 
         } else {
@@ -386,12 +422,19 @@ public class Client {
                 for (int j = 0; j < 8; j++) {
                     ChessPosition position = new ChessPosition(i+1,8-j);
                     ChessPiece piece = board.getPiece(position);
-                    if (piece == null){
-                        output.append(printSquare(i+1, 8-j));
-                    } else {
-                        output.append(printPiece(piece, i+1, 8-j));
+
+                    if (highlighting){
+                        if (lightEndPositions.contains(position)){
+                            lightSquare = true;
+                        }
                     }
 
+                    if (piece == null){
+                        output.append(printSquare(i+1, 8-j, lightSquare));
+                    } else {
+                        output.append(printPiece(piece, i+1, 8-j, lightSquare));
+                    }
+                    lightSquare = false;
 
 
                 }
@@ -407,25 +450,26 @@ public class Client {
         return output.toString();
     }
 
-    private String printSquare(int row, int col){
+    private String printSquare(int row, int col, boolean highlight){
         String square;
+
         if (row % 2 == 0){
             if (col % 2 == 0){
-                square = SET_BG_COLOR_DARK_BROWN + EMPTY;
+                square = highlight ? SET_BG_COLOR_GREEN + EMPTY : SET_BG_COLOR_DARK_BROWN + EMPTY;
             } else {
-                square = SET_BG_COLOR_LIGHT_BROWN + EMPTY;
+                square = highlight ? SET_BG_COLOR_YELLOW + EMPTY : SET_BG_COLOR_LIGHT_BROWN + EMPTY;
             }
         } else {
             if (col % 2 == 0){
-                square = SET_BG_COLOR_LIGHT_BROWN + EMPTY;
+                square = highlight ? SET_BG_COLOR_YELLOW + EMPTY : SET_BG_COLOR_LIGHT_BROWN + EMPTY;
             } else {
-                square = SET_BG_COLOR_DARK_BROWN + EMPTY;
+                square = highlight ? SET_BG_COLOR_GREEN + EMPTY : SET_BG_COLOR_DARK_BROWN + EMPTY;
             }
         }
         return square;
     }
 
-    private String printPiece(ChessPiece piece, int row, int col){
+    private String printPiece(ChessPiece piece, int row, int col, boolean highlight){
         String square;
         String pieceString;
         switch (piece.getPieceType()){
@@ -436,17 +480,19 @@ public class Client {
             case KING -> pieceString = (piece.getTeamColor() == ChessGame.TeamColor.WHITE) ? WHITE_KING : BLACK_KING;
             default -> pieceString = (piece.getTeamColor() == ChessGame.TeamColor.WHITE) ? WHITE_PAWN : BLACK_PAWN;
         }
+        String square1 = highlight ? SET_BG_COLOR_GREEN + pieceString : SET_BG_COLOR_DARK_BROWN + pieceString;
+        String square2 = highlight ? SET_BG_COLOR_YELLOW + pieceString : SET_BG_COLOR_LIGHT_BROWN + pieceString;
         if (row % 2 == 0){
             if (col % 2 == 0){
-                square = SET_BG_COLOR_DARK_BROWN + pieceString;
+                square = square1;
             } else {
-                square = SET_BG_COLOR_LIGHT_BROWN + pieceString;
+                square = square2;
             }
         } else {
             if (col % 2 == 0){
-                square = SET_BG_COLOR_LIGHT_BROWN + pieceString;
+                square = square2;
             } else {
-                square = SET_BG_COLOR_DARK_BROWN + pieceString;
+                square = square1;
             }
         }
         return square;

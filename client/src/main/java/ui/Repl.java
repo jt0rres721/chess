@@ -53,7 +53,7 @@ public class Repl implements NotificationHandler{
         }
         if (message.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME){
             client.addGame(new Gson().fromJson(message.getMessage(), ChessGame.class));
-            System.out.println(client.printBoard());
+            System.out.println(client.printBoard(null));
             printPrompt();
         }
         if (message.getServerMessageType() == ServerMessage.ServerMessageType.ERROR){
