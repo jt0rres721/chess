@@ -172,8 +172,12 @@ public class Client {
             } catch (Exception e){
                 throw new ServerException("Error: Bad request", 400);
             }
-            int gameID = games.get(id).gameID();
-
+            int gameID;
+            try {
+                gameID = games.get(id).gameID();
+            } catch (Exception e){
+                throw new ServerException("Error: No such game", 400);
+            }
             JoinRequest join = new JoinRequest(params[1].toUpperCase(), gameID);
             server.joinGame(join, authToken);
 
