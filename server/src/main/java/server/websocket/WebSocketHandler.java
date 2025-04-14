@@ -7,7 +7,6 @@ import chess.ChessPosition;
 import chess.GameStatus;
 import com.google.gson.Gson;
 import dataaccess.ServerException;
-import org.eclipse.jetty.websocket.api.RemoteEndpoint;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
@@ -40,9 +39,9 @@ public class WebSocketHandler {
 
             switch (command.getCommandType()){
                 case CONNECT -> connect(session, username, command);
-                case LEAVE -> leaveGame(username);
-                case RESIGN -> resign(session, username, command);
-                case MAKE_MOVE -> makeMove(session, username, command);
+                case LEAVE -> leaveGame(username, command);
+                case RESIGN -> resign(username, command);
+                case MAKE_MOVE -> makeMove(username, command);
             }
         } catch (UnauthorizedException ex){
             ServerMessage error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: unauthorized");
@@ -91,9 +90,8 @@ public class WebSocketHandler {
         manager.sendUser(username, loadGame);
     }
 
-    private void makeMove(Session session, String username, UserGameCommand command) throws IOException, ServerException {
+    private void makeMove(String username, UserGameCommand command) throws IOException, ServerException {
         int gameID = command.getGameID();
-        String auth = command.getAuthToken();
         ChessMove move = command.getMove();
 
         gameService.makeMove(move, gameID);
@@ -144,15 +142,16 @@ public class WebSocketHandler {
     }
 
 
-    private void leaveGame(String username) throws IOException {//, Session session, UserGameCommand command){
+    private void leaveGame(String username, UserGameCommand command) throws IOException, ServerException {
         manager.remove(username);
+        gameService.leaveGame(username, command.getGameID());
         var message = String.format("%s left the game", username);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         manager.broadcast(username, notification);
     }
 
 
-    private void resign(Session session, String username, UserGameCommand command) throws ServerException, IOException {
+    private void resign(String username, UserGameCommand command) throws ServerException, IOException {
         int gameID = command.getGameID();
         gameService.endGame(gameID);
 
@@ -165,6 +164,4 @@ public class WebSocketHandler {
         manager.broadcast(username, notification);
     }
 
-
-    private void sendMessage(RemoteEndpoint remote, String message){}
 }

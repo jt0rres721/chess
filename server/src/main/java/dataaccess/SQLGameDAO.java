@@ -1,8 +1,6 @@
 package dataaccess;
 
 import chess.ChessGame;
-import chess.ChessMove;
-import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import model.GameData;
 
@@ -149,6 +147,34 @@ public class SQLGameDAO implements GameDAO{
             return getGame(gameID);
         }
         return null;
+    }
+
+    @Override
+    public void leaveGame(int gameID, String color) throws ServerException {
+        var statement = "";
+        if(Objects.equals(color, "WHITE")&& getGame(gameID)!= null){
+            statement = "UPDATE games SET whiteUsername = ? WHERE gameID = ?";
+            executeUpdate(statement, null , gameID);
+
+            GameData game1 = getGame(gameID);
+
+            var statement2 = "UPDATE games SET json = ? WHERE gameID = ?";
+            var json = new Gson().toJson(new GameData(gameID, null,
+                    game1.blackUsername(),game1.gameName(), game1.game()));
+            executeUpdate(statement2, json, gameID);
+
+        }
+        else if(Objects.equals(color, "BLACK")&& getGame(gameID)!= null){
+            statement = "UPDATE games SET blackUsername = ? WHERE gameID = ?";
+            executeUpdate(statement, null, gameID);
+
+            GameData game1 = getGame(gameID);
+
+            var statement2 = "UPDATE games SET json = ? WHERE gameID = ?";
+            var json = new Gson().toJson(new GameData(gameID, game1.whiteUsername(),
+                    null ,game1.gameName(), game1.game()));
+            executeUpdate(statement2, json, gameID);
+        }
     }
 
     private int executeUpdate(String statement, Object... params) throws ServerException {

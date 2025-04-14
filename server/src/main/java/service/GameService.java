@@ -13,6 +13,7 @@ import model.ListResult2;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class GameService {
     private final GameDAO gameData;
@@ -96,6 +97,18 @@ public class GameService {
 
         return gameData.joinGame(gameID, playerColor, username);
 
+    }
+
+    public void leaveGame(String username, int gameID) throws ServerException {
+        GameData game = getGame(gameID);
+        if(Objects.equals(game.whiteUsername(), username)){
+            System.out.println("The leaving user matches white username");
+            gameData.leaveGame(gameID, "WHITE");
+        } else if (Objects.equals(game.blackUsername(), username)){
+            System.out.println("The leaving user matches black username");
+            gameData.leaveGame(gameID, "BLACK");
+        }
+        System.out.println("The leaving user matches no username");
     }
 
     public void endGame(int gameID) throws ServerException {

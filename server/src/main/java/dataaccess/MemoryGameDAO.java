@@ -1,7 +1,6 @@
 package dataaccess;
 
 import chess.ChessGame;
-import chess.ChessMove;
 import model.GameData;
 
 import java.util.ArrayList;
@@ -65,14 +64,21 @@ public class MemoryGameDAO implements GameDAO{
 
 
     @Override
-    public ChessGame getChess(int gameID) throws ServerException {
+    public ChessGame getChess(int gameID){
         return null;
     }
 
     @Override
-    public void updateGame(ChessGame game, int gameID) throws ServerException {
+    public void leaveGame(int gameID, String color) {
 
     }
+
+    @Override
+    public void updateGame(ChessGame game, int gameID){
+
+    }
+
+
 
 
 }
