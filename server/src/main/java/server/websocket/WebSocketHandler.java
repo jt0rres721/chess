@@ -110,16 +110,6 @@ public class WebSocketHandler {
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         manager.broadcast(username, notification);
 
-        //if check or checkmate
-        if(game.isInCheck(ChessGame.TeamColor.WHITE) || game.isInCheck(ChessGame.TeamColor.BLACK)){
-            var data = gameService.getGame(gameID);
-            var teamColor = (game.isInCheck(ChessGame.TeamColor.WHITE)) ? "White" : "Black";
-            var user = (game.isInCheck(ChessGame.TeamColor.WHITE)) ? data.whiteUsername() : data.blackUsername();
-            var checkMsg = String.format("%s user '%s' is in check", teamColor, user);
-            var serverMsg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, checkMsg);
-            manager.broadcast(null, serverMsg);
-        }
-
         if(game.getState() == GameStatus.OVER){
             var data = gameService.getGame(gameID);
             if(game.isInStalemate(ChessGame.TeamColor.WHITE) || game.isInStalemate(ChessGame.TeamColor.BLACK)){
@@ -134,6 +124,14 @@ public class WebSocketHandler {
                manager.broadcast(null, serverMsg);
 
             }
+
+        } else if(game.isInCheck(ChessGame.TeamColor.WHITE) || game.isInCheck(ChessGame.TeamColor.BLACK)){
+            var data = gameService.getGame(gameID);
+            var teamColor = (game.isInCheck(ChessGame.TeamColor.WHITE)) ? "White" : "Black";
+            var user = (game.isInCheck(ChessGame.TeamColor.WHITE)) ? data.whiteUsername() : data.blackUsername();
+            var checkMsg = String.format("%s user '%s' is in check", teamColor, user);
+            var serverMsg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, checkMsg);
+            manager.broadcast(null, serverMsg);
         }
 
     }
