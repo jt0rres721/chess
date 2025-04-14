@@ -38,6 +38,13 @@ public class ChessGame {
         ChessPiece piece = myBoard.getPiece(move.getStartPosition());
         validateMove(move, piece);
         executeMove(move, piece);
+
+        if(isInCheckmate(TeamColor.BLACK) || isInCheckmate(TeamColor.WHITE)){
+            state = GameStatus.OVER;
+        }
+        if(isInStalemate(TeamColor.WHITE) || isInStalemate(TeamColor.BLACK)){
+            state = GameStatus.OVER;
+        }
     }
 
     private void validateMove(ChessMove move, ChessPiece piece) throws InvalidMoveException {
