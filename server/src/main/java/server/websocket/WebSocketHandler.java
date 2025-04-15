@@ -188,10 +188,6 @@ public class WebSocketHandler {
 
         gameService.endGame(gameID);
 
-        var load = new Gson().toJson(gameService.getChess(gameID));
-        var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, load);
-        manager.broadcast(username, loadGame, gameID);
-
         manager.send(session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
                 "You have resigned from the game"));
 
