@@ -96,6 +96,15 @@ public class WebSocketHandler {
         ChessMove move = command.getMove();
         var info = gameService.getGame(gameID);
         ChessBoard brr = gameService.getChess(gameID).getBoard();
+        ChessGame g = gameService.getChess(gameID);
+
+        if(g.getState() == GameStatus.OVER){
+            throw new ServerException("Error: Game has already ended", 400);
+        }
+
+        if(!Objects.equals(username, info.blackUsername()) && !Objects.equals(username, info.whiteUsername())){
+            throw new ServerException("Error: Not a playing user", 400);
+        }
 
         if(Objects.equals(username, info.whiteUsername()) && brr.getPiece(move.getStartPosition()).getTeamColor() ==
                 ChessGame.TeamColor.BLACK){
