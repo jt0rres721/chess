@@ -331,13 +331,11 @@ public class Client {
             return "No game";
         }
         ChessBoard board = game.getBoard();
-
         //Highlight piece shenanigans
         boolean highlighting = false;
         ChessPiece lightPiece;
         Collection<ChessMove> lightMoves;
         Collection<ChessPosition> lightEndPositions = new ArrayList<>();
-
         if(highlight != null){
             if (board.getPiece(highlight)==null){
                 return "Error: no such piece";
@@ -349,8 +347,6 @@ public class Client {
                 lightEndPositions.add(mv.getEndPosition());
             }
         }
-
-
         StringBuilder output = new StringBuilder();
         if (color.equals( "white") || color.equals("observer")) {
             output.append(printWhite(highlighting, lightEndPositions));
@@ -368,19 +364,16 @@ public class Client {
         output.append(printHeader(color));
 
         boolean lightSquare = false;
-
         for (int i = 0; i < 8; i++) {
             output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", 8 - i));
             for (int j = 0; j < 8; j++) {
                 ChessPosition position = new ChessPosition(8-i,j+1);
                 ChessPiece piece = board.getPiece(position);
-
                 if (highlighting){
                     if (lightEndPositions.contains(position)){
                         lightSquare = true;
                     }
                 }
-
                 if (piece == null){
                     output.append(printSquare(8-i, j+1, lightSquare));
                 } else {
@@ -394,20 +387,17 @@ public class Client {
         output.append(printHeader(color));
         return output.toString();
     }
-
     private String printBlack(boolean highlighting, Collection<ChessPosition> lightEndPositions){
         StringBuilder output = new StringBuilder();
         ChessBoard board = game.getBoard();
         output.append(SET_TEXT_COLOR_BLACK);
         output.append(printHeader(color));
-
         boolean lightSquare = false;
         for (int i = 0; i < 8; i++) {
             output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", i + 1));
             for (int j = 0; j < 8; j++) {
                 ChessPosition position = new ChessPosition(i+1,8-j);
                 ChessPiece piece = board.getPiece(position);
-
                 if (highlighting){
                     if (lightEndPositions.contains(position)){
                         lightSquare = true;
@@ -425,13 +415,11 @@ public class Client {
         }
         output.append(SET_TEXT_COLOR_BLACK);
         output.append(printHeader(color));
-
         return output.toString();
     }
 
     private String printSquare(int row, int col, boolean highlight){
         String square;
-
         if (row % 2 == 0){
             if (col % 2 == 0){
                 square = highlight ? SET_BG_COLOR_GREEN + EMPTY : SET_BG_COLOR_DARK_BROWN + EMPTY;
@@ -447,7 +435,6 @@ public class Client {
         }
         return square;
     }
-
     private String printPiece(ChessPiece piece, int row, int col, boolean highlight){
         String square;
         String pieceString;
