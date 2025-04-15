@@ -20,11 +20,13 @@ public class WebSocketHandler {
     private final ConnectionManager manager = new ConnectionManager();
     private final UserService userService;
     private final GameService gameService;
+    private boolean resign;
 
 
     public WebSocketHandler(UserService userService, GameService gameService) {
         this.userService = userService;
         this.gameService = gameService;
+        resign = false;
     }
 
     @OnWebSocketMessage
@@ -33,13 +35,14 @@ public class WebSocketHandler {
             UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
             String username = getUsername(command.getAuthToken());
 
-            saveSession(username, session);
+            saveSession(username, session, command.getGameID());
 
             switch (command.getCommandType()){
                 case CONNECT -> connect(session, username, command);
                 case LEAVE -> leaveGame(username, command);
-                case RESIGN -> resign(username, command);
+                case RESIGN -> resign(session, username, command);
                 case MAKE_MOVE -> makeMove(username, command);
+                case CANCEL -> cancelResign();
             }
         } catch (UnauthorizedException ex){
             ServerMessage error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, null);
@@ -51,6 +54,9 @@ public class WebSocketHandler {
             manager.send(session, error);
         }
     }
+    private void cancelResign(){
+        resign = false;
+    }
 
     private String getUsername(String authToken){
         try{
@@ -61,8 +67,8 @@ public class WebSocketHandler {
 
     }
 
-    private void saveSession(String name, Session session){
-        Connection connection = new Connection(name,session);
+    private void saveSession(String name, Session session, int gameID){
+        Connection connection = new Connection(name,session, gameID);
         if(!manager.connections.contains(connection)){
             manager.connections.put(name, connection);
         }
@@ -70,7 +76,7 @@ public class WebSocketHandler {
 
     private void connect(Session session, String username, UserGameCommand command) throws IOException, ServerException {
         int gameID = command.getGameID();
-        manager.add(username, session);
+        manager.add(username, session, command.getGameID());
 
         var file = gameService.getGame(gameID);
         String playerType;
@@ -87,7 +93,7 @@ public class WebSocketHandler {
         var game = new Gson().toJson(gameService.getChess(gameID));
         ServerMessage loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null);
         loadGame.setGame(game);
-        manager.broadcast(username, notification);
+        manager.broadcast(username, notification, gameID);
         manager.sendUser(username, loadGame);
     }
 
@@ -98,12 +104,12 @@ public class WebSocketHandler {
         ChessBoard brr = gameService.getChess(gameID).getBoard();
         ChessGame g = gameService.getChess(gameID);
 
-        if(g.getState() == GameStatus.OVER){
-            throw new ServerException("Error: Game has already ended", 400);
-        }
-
         if(!Objects.equals(username, info.blackUsername()) && !Objects.equals(username, info.whiteUsername())){
             throw new ServerException("Error: Not a playing user", 400);
+        }
+
+        if(g.getState() == GameStatus.OVER){
+            throw new ServerException("Error: Game has already ended", 400);
         }
 
         if(Objects.equals(username, info.whiteUsername()) && brr.getPiece(move.getStartPosition()).getTeamColor() ==
@@ -122,26 +128,26 @@ public class WebSocketHandler {
         var load = new Gson().toJson(game);
         ServerMessage loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null);
         loadGame.setGame(load);
-        manager.broadcast(null, loadGame);
+        manager.broadcast(null, loadGame, gameID);
 
         String start = toChessPosition(move.getStartPosition());
         String end = toChessPosition(move.getEndPosition());
         var message = String.format("%s made a move from %s to %s", username, start, end);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-        manager.broadcast(username, notification);
+        manager.broadcast(username, notification, gameID);
 
         if(game.getState() == GameStatus.OVER){
             var data = gameService.getGame(gameID);
             if(game.isInStalemate(ChessGame.TeamColor.WHITE) || game.isInStalemate(ChessGame.TeamColor.BLACK)){
                var checkMsg = "The game has resulted in a stalemate. Good game!";
                var serverMsg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, checkMsg);
-               manager.broadcast(null, serverMsg);
+               manager.broadcast(null, serverMsg, gameID);
             } else if(game.isInCheckmate(ChessGame.TeamColor.WHITE) || game.isInCheckmate(ChessGame.TeamColor.BLACK)){
                var teamColor = (game.isInCheckmate(ChessGame.TeamColor.WHITE)) ? "White" : "Black";
                var user = (game.isInCheckmate(ChessGame.TeamColor.WHITE)) ? data.whiteUsername() : data.blackUsername();
                var checkMsg = String.format("%s user '%s' has been checkmated. Game over!", teamColor, user);
                var serverMsg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, checkMsg);
-               manager.broadcast(null, serverMsg);
+               manager.broadcast(null, serverMsg, gameID);
 
             }
 
@@ -151,7 +157,7 @@ public class WebSocketHandler {
             var user = (game.isInCheck(ChessGame.TeamColor.WHITE)) ? data.whiteUsername() : data.blackUsername();
             var checkMsg = String.format("%s user '%s' is in check", teamColor, user);
             var serverMsg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, checkMsg);
-            manager.broadcast(null, serverMsg);
+            manager.broadcast(null, serverMsg, gameID);
         }
 
     }
@@ -169,21 +175,44 @@ public class WebSocketHandler {
         gameService.leaveGame(username, command.getGameID());
         var message = String.format("%s left the game", username);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-        manager.broadcast(username, notification);
+        manager.broadcast(username, notification, command.getGameID());
     }
 
 
-    private void resign(String username, UserGameCommand command) throws ServerException, IOException {
+    private void resign(Session session, String username, UserGameCommand command) throws ServerException, IOException {
         int gameID = command.getGameID();
-        gameService.endGame(gameID);
+        var data = gameService.getGame(gameID);
+        ChessGame g = gameService.getChess(gameID);
 
-        var load = new Gson().toJson(gameService.getChess(gameID));
-        var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, load);
-        manager.broadcast(username, loadGame);
+        if(g.getState() == GameStatus.OVER){
+            throw new ServerException("Error: Game has ended already", 400);
+        }
 
-        var message = username + " resigned from the game";
-        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-        manager.broadcast(username, notification);
+        if(!Objects.equals(username, data.whiteUsername()) && !Objects.equals(username, data.blackUsername())){
+            throw new ServerException("Error: Not a playing user", 400);
+        }
+
+        if(resign){
+            gameService.endGame(gameID);
+
+            var load = new Gson().toJson(gameService.getChess(gameID));
+            var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, load);
+            manager.broadcast(username, loadGame, gameID);
+
+            manager.send(session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                    "You have resigned from the game"));
+
+            var message = username + " resigned from the game";
+            var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+            manager.broadcast(username, notification, gameID);
+            resign = false;
+
+        } else {
+            var message = "This action will result in forfeit of the game. Are you sure? [yes|no]";
+            var msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+            manager.send(session, msg);
+            resign = true;
+        }
     }
 
 }

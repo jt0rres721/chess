@@ -22,6 +22,7 @@ public class Client {
     private String color;
     private String authToken;
     private ChessGame game;
+    private boolean resigning;
 
     public Client(String serverUrl, NotificationHandler notificationHandler){
         this.notificationHandler = notificationHandler;
@@ -32,6 +33,7 @@ public class Client {
         authToken = "";
         currentGameID = -1;
         game = null;
+        resigning = false;
     }
     public String eval(String input){
         try{
@@ -43,7 +45,7 @@ public class Client {
                 case SIGNEDIN -> signedInClient(cmd, params);
                 case GAMING -> gamingClient(cmd, params);
                 case RESIGN -> resignPrompt(cmd);
-                case OBSERVING -> observingClient(cmd);
+                case OBSERVING -> observingClient(cmd, params);
             };
         }catch (Exception ex){
             return ex.getMessage();
@@ -63,10 +65,10 @@ public class Client {
                 %s- login <USERNAME> <PASSWORD> %s - to play chess
                 %s- quit %s - to end session
                 %s- help %s - to display possible commands
-                """, EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
-                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
-                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
-                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA);
+                """, SET_TEXT_COLOR_GREEN, SET_TEXT_COLOR_MAGENTA,
+                SET_TEXT_COLOR_GREEN, SET_TEXT_COLOR_MAGENTA,
+                SET_TEXT_COLOR_GREEN, SET_TEXT_COLOR_MAGENTA,
+                SET_TEXT_COLOR_GREEN, SET_TEXT_COLOR_MAGENTA);
     }
     private String register(String... params) throws SharedException {
         if (params.length == 3){
@@ -112,13 +114,13 @@ public class Client {
                 %s- logout %s - when you are done
                 %s- quit %s - to end session
                 %s- help %s - to display possible commands
-                """, EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
-                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
-                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
-                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
-                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
-                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
-                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA);
+                """, SET_TEXT_COLOR_GREEN, SET_TEXT_COLOR_MAGENTA,
+                SET_TEXT_COLOR_GREEN, SET_TEXT_COLOR_MAGENTA,
+                SET_TEXT_COLOR_GREEN, SET_TEXT_COLOR_MAGENTA,
+                SET_TEXT_COLOR_GREEN, SET_TEXT_COLOR_MAGENTA,
+                SET_TEXT_COLOR_GREEN, SET_TEXT_COLOR_MAGENTA,
+                SET_TEXT_COLOR_GREEN, SET_TEXT_COLOR_MAGENTA,
+                SET_TEXT_COLOR_GREEN, SET_TEXT_COLOR_MAGENTA);
     }
     private String create(String... params) throws SharedException {
         if (params.length >= 1){
@@ -191,7 +193,7 @@ public class Client {
             ws.connect(authToken, gameID);
             color = "observer";
             currentGameID = gameID;
-            state = State.OBSERVING;
+            state = State.OBSERVING ;
             return "Joined game as an observer";
         } throw new SharedException("Error: Bad request", 400);
     }
@@ -211,14 +213,22 @@ public class Client {
         return "quit";
     }
     private String gamingClient(String cmd, String... params) throws SharedException {
-        return switch (cmd) {
-            case "redraw" -> printBoard(null);
-            case "leave" -> leaveGame();
-            case "move" -> makeMove(params);
-            case "resign" -> resign();
-            case "highlight" -> highlightMoves(params);
-            default -> helpG();
-        };
+        if(resigning){
+            return switch(cmd){
+                case "yes" -> forfeitGame();
+                case "no" -> noForfeit();
+                default -> "Resign? Enter [yes|no]";
+            };
+        } else{
+            return switch (cmd) {
+                case "redraw" -> printBoard(null);
+                case "leave" -> leaveGame();
+                case "move" -> makeMove(params);
+                case "resign" -> resign();
+                case "highlight" -> highlightMoves(params);
+                default -> helpG();
+            };
+        }
     }
     public String helpG() {
         return String.format("""
@@ -228,12 +238,12 @@ public class Client {
                 %s- resign %s -  to forfeit the game
                 %s- highlight <POSITION> %s - to highlight the moves of a piece
                 %s- help %s - to display possible commands
-                """, EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
-                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
-                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
-                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
-                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
-                EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA);
+                """, SET_TEXT_COLOR_GREEN, SET_TEXT_COLOR_MAGENTA,
+                SET_TEXT_COLOR_GREEN, SET_TEXT_COLOR_MAGENTA,
+                SET_TEXT_COLOR_GREEN, SET_TEXT_COLOR_MAGENTA,
+                SET_TEXT_COLOR_GREEN, SET_TEXT_COLOR_MAGENTA,
+                SET_TEXT_COLOR_GREEN, SET_TEXT_COLOR_MAGENTA,
+                SET_TEXT_COLOR_GREEN, SET_TEXT_COLOR_MAGENTA);
     }
     private String leaveGame() throws SharedException {
         ws.leave(authToken, currentGameID);
@@ -246,9 +256,6 @@ public class Client {
     private String makeMove(String... params) throws SharedException {
         if(game.getState() == GameStatus.OVER){
             return "Game has ended. No more moves allowed";
-        }
-        if(!game.getTeamTurn().toString().toLowerCase().equals(color)){
-            throw new SharedException("Error: Bad request, not your turn", 400);
         }
         if (authToken.isEmpty() || currentGameID < 0){
             throw new SharedException("ERROR: Bad Request, no game id or authdata", 400);
@@ -271,7 +278,7 @@ public class Client {
             move = new ChessMove(startPos, endPos, null);
         }
         ws.makeMove(authToken, currentGameID, move);
-        return "Made move from " + start +" to " + end;
+        return "";//"Made move from " + start +" to " + end;
     }
     private ChessPiece.PieceType assignPiece(String piece) throws SharedException {
         piece = piece.toLowerCase();
@@ -283,9 +290,12 @@ public class Client {
             default -> throw new SharedException("Error: Bad request, enter piecetype",400);
         };
     }
-    private String resign(){
-        state = State.RESIGN;
-        return "This action will result in forfeit of the game. Are you sure? [yes|no]";
+    private String resign() throws SharedException {
+        ws.resign(authToken, currentGameID);
+        if(state == State.GAMING && game.getState() != GameStatus.OVER){
+            resigning = true;
+        }
+        return "";
     }
     private String highlightMoves(String... params) throws SharedException {
         if (params.length != 1){
@@ -302,20 +312,29 @@ public class Client {
         };
     }
     private String forfeitGame() throws SharedException {
-        ws.resign(authToken, currentGameID);
-        state = State.GAMING;
-        return "Resigned from the game";
-    }
-    private String noForfeit(){
-        state = State.GAMING;
-        return "Continue playing.";
-    }
-    private String observingClient(String cmd) throws SharedException {
-        if(cmd.equals("leave")){
-            return leaveGame();
-        } else {
-            return "Enter 'leave' to leave game";
+        if (resigning){
+            ws.resign(authToken, currentGameID);
+            resigning = false;
         }
+        return "";
+    }
+    private String noForfeit() throws SharedException {
+        if (resigning){
+            ws.cancel(authToken, currentGameID);
+            resigning = false;
+        }
+        return "";
+    }
+    private String observingClient(String cmd, String... params) throws SharedException {
+        return switch (cmd) {
+            case "redraw" -> printBoard(null);
+            case "leave" -> leaveGame();
+            case "move" -> makeMove(params);
+            case "resign" -> resign();
+            case "highlight" -> highlightMoves(params);
+            default -> "Enter 'leave' to leave or 'highlight' <Position> to highlight a piece";
+        };
+
     }
     private ChessPosition toPosition(String notation) {
         int col = notation.charAt(0) - 'a' + 1;
@@ -351,6 +370,7 @@ public class Client {
         }
         StringBuilder output = new StringBuilder();
         if (color.equals( "white") || color.equals("observer")) {
+            System.out.println("Printing color equals " + color);
             output.append(printWhite(highlighting, lightEndPositions));
             } else {
             output.append(printBlack(highlighting, lightEndPositions));

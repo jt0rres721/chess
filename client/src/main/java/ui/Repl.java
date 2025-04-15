@@ -52,12 +52,12 @@ public class Repl implements NotificationHandler{
             printPrompt();
         }
         if (message.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME){
-            client.addGame(new Gson().fromJson(message.getMessage(), ChessGame.class));
+            client.addGame(new Gson().fromJson(message.getGame(), ChessGame.class));
             System.out.println(client.printBoard(null));
             printPrompt();
         }
         if (message.getServerMessageType() == ServerMessage.ServerMessageType.ERROR){
-            System.out.println(SET_TEXT_COLOR_RED + message.getMessage());
+            System.out.println(SET_TEXT_COLOR_RED + message.getError());
             printPrompt();
         }
 

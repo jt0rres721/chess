@@ -30,8 +30,16 @@ public class ServerMessage {
         this.game = game;
     }
 
+    public String getGame(){
+        return game;
+    }
+
     public void setErrorMessage(String error){
         this.errorMessage = error;
+    }
+
+    public String getError(){
+        return errorMessage;
     }
 
 

@@ -79,6 +79,16 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
+    public void cancel(String authToken, int gameID) throws SharedException{
+        var command = new UserGameCommand(UserGameCommand.CommandType.CANCEL, authToken, gameID);
+        try{
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
+        } catch(IOException e){
+            throw new SharedException(e.getMessage(), 500);
+        }
+
+    }
+
 
 
 
