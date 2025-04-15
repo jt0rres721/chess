@@ -1,15 +1,11 @@
 package ui;
-
 import chess.*;
 import model.*;
 import server.ServerException;
 import server.ServerFacade;
 import ui.websocket.NotificationHandler;
 import ui.websocket.WebSocketFacade;
-
 import static ui.EscapeSequences.*;
-
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,7 +23,6 @@ public class Client {
     private String authToken;
     private ChessGame game;
 
-
     public Client(String serverUrl, NotificationHandler notificationHandler){
         this.notificationHandler = notificationHandler;
         server = new ServerFacade(serverUrl);
@@ -38,7 +33,6 @@ public class Client {
         currentGameID = -1;
         game = null;
     }
-
     public String eval(String input){
         try{
             var tokens = input.toLowerCase().split(" ");
@@ -51,14 +45,10 @@ public class Client {
                 case RESIGN -> resignPrompt(cmd, params);
                 case OBSERVING -> observingClient(cmd);
             };
-
         }catch (Exception ex){
             return ex.getMessage();
         }
-
     }
-
-
     private String signedOutClient(String cmd, String... params) throws ServerException {
         return switch (cmd) {
             case "register" -> register(params);
@@ -102,8 +92,6 @@ public class Client {
             return String.format("Logged in as %s.", user.username());
         } throw new ServerException("Error: Bad request", 400);
     }
-
-
     private String signedInClient(String cmd, String... params) throws ServerException{
         return switch (cmd) {
             case "logout" -> logout();
@@ -288,7 +276,7 @@ public class Client {
         ChessPosition startPos = toPosition(start);
         ChessPosition endPos = toPosition(end);
 
-        ChessMove move = new ChessMove(startPos, endPos, null); //TODO implement promotion piece
+        ChessMove move = new ChessMove(startPos, endPos, null);
         ws.makeMove(authToken, currentGameID, move);
         return "Made move from " + start +" to " + end;
     }
@@ -303,8 +291,6 @@ public class Client {
         ChessPosition position = toPosition(params[0]);
         return printBoard(position);
     }
-
-
     private String resignPrompt(String cmd, String... params) throws ServerException {
         return switch(cmd){
             case "yes" -> forfeitGame();
@@ -322,7 +308,6 @@ public class Client {
         return "Continue playing.";
     }
 
-
     private String observingClient(String cmd) throws ServerException {
         if(cmd.equals("leave")){
             return leaveGame();
@@ -330,8 +315,6 @@ public class Client {
             return "Enter 'leave' to leave game";
         }
     }
-
-
     private ChessPosition toPosition(String notation) {
         int col = notation.charAt(0) - 'a' + 1;
         int row = Integer.parseInt(notation.substring(1));  // handles ranks 1–8, and even 10 if needed
@@ -343,11 +326,6 @@ public class Client {
     public void addGame(ChessGame game){
         this.game = game;
     }
-
-
-
-
-
 
     public String printBoard(ChessPosition highlight){
         if (game == null){
@@ -371,7 +349,6 @@ public class Client {
             for (ChessMove mv : lightMoves){
                 lightEndPositions.add(mv.getEndPosition());
             }
-
         }
 
         boolean lightSquare = false;
@@ -397,9 +374,7 @@ public class Client {
                     } else {
                         output.append(printPiece(piece, 8 - i, j + 1, lightSquare));
                     }
-
                     lightSquare = false;
-
                 }
                 output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", 8 - i));
                 output.append(RESET_BG_COLOR + "\n");
@@ -421,15 +396,12 @@ public class Client {
                             lightSquare = true;
                         }
                     }
-
                     if (piece == null){
                         output.append(printSquare(i+1, 8-j, lightSquare));
                     } else {
                         output.append(printPiece(piece, i+1, 8-j, lightSquare));
                     }
                     lightSquare = false;
-
-
                 }
                 output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", i + 1));
                 output.append(RESET_BG_COLOR + "\n");
@@ -437,8 +409,6 @@ public class Client {
             output.append(SET_TEXT_COLOR_BLACK);
             output.append(printHeader(color));
         }
-
-
         output.append(RESET_BG_COLOR);
         return output.toString();
     }
@@ -518,8 +488,6 @@ public class Client {
             output.append(SET_BG_COLOR_LIGHT_GREY + "   ");
             output.append(RESET_BG_COLOR + "\n");
         }
-
         return output.toString();
     }
-
 }
