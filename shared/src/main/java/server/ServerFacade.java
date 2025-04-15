@@ -12,47 +12,47 @@ public class ServerFacade {
         this.serverUrl = url;
     }
 
-    public RegisterResult register(RegisterRequest request) throws ServerException {
+    public RegisterResult register(RegisterRequest request) throws SharedException {
         var path = "/user";
 
         return makeRequest("POST", path, request, RegisterResult.class, null);
     }
 
-    public LoginResult login(LoginRequest request) throws ServerException{
+    public LoginResult login(LoginRequest request) throws SharedException{
         var path = "/session";
         return makeRequest("POST", path, request, LoginResult.class, null);
     }
 
-    public void logout(String token) throws ServerException{
+    public void logout(String token) throws SharedException{
         var path = "/session";
         makeRequest("DELETE", path, null, null, token);
     }
 
-    public ListResult listGames(String token) throws ServerException{
+    public ListResult listGames(String token) throws SharedException{
         var path = "/game";
 
         return makeRequest("GET", path, null, ListResult.class, token);
     }
 
 
-    public CreateResult createGame(CreateRequest create, String token) throws ServerException{
+    public CreateResult createGame(CreateRequest create, String token) throws SharedException{
         var path = "/game";
 
         return makeRequest("POST", path, create, CreateResult.class, token);
     }
 
-    public void joinGame(JoinRequest request, String token)throws ServerException{
+    public void joinGame(JoinRequest request, String token)throws SharedException{
         var path = "/game";
 
         makeRequest("PUT", path, request, null, token);
     }
 
-    public void clear() throws ServerException {
+    public void clear() throws SharedException {
         var path = "/db";
         makeRequest("DELETE", path, null, null, null);
     }
 
-    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String token) throws ServerException {
+    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String token) throws SharedException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
@@ -68,7 +68,7 @@ public class ServerFacade {
             throwIfNotSuccessful(http);
             return readBody(http, responseClass);
         } catch (Exception ex) {
-            throw new ServerException(ex.getMessage(), 500);
+            throw new SharedException(ex.getMessage(), 500);
         }
     }
 
@@ -95,16 +95,16 @@ public class ServerFacade {
         return response;
     }
 
-    private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ServerException {
+    private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, SharedException {
         var status = http.getResponseCode();
         if (!isSuccessful(status)) {
             try (InputStream respErr = http.getErrorStream()) {
                 if (respErr != null) {
-                    throw ServerException.fromJson(respErr);
+                    throw SharedException.fromJson(respErr);
                 }
             }
 
-            throw new ServerException("other failure: " + status, status);
+            throw new SharedException("other failure: " + status, status);
         }
     }
 

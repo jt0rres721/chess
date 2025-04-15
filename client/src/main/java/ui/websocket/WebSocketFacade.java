@@ -2,7 +2,7 @@ package ui.websocket;
 
 import chess.ChessMove;
 import com.google.gson.Gson;
-import server.ServerException;
+import server.SharedException;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
@@ -16,7 +16,7 @@ public class WebSocketFacade extends Endpoint {
     Session session;
     NotificationHandler notificationHandler;
 
-    public WebSocketFacade(String url, NotificationHandler notificationHandler) throws ServerException {
+    public WebSocketFacade(String url, NotificationHandler notificationHandler) throws SharedException {
         try{
             url = url.replace("http", "ws");
             URI socketUri = new URI(url + "/ws");
@@ -33,7 +33,7 @@ public class WebSocketFacade extends Endpoint {
             }});
 
         } catch (DeploymentException | IOException | URISyntaxException e) {
-            throw new ServerException(e.getMessage(), 500);
+            throw new SharedException(e.getMessage(), 500);
         }
     }
 
@@ -42,40 +42,40 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void connect(String authToken, int gameID) throws ServerException {
+    public void connect(String authToken, int gameID) throws SharedException {
         try{
         var command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
         this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException ex){
-            throw new ServerException(ex.getMessage(), 500);
+            throw new SharedException(ex.getMessage(), 500);
         }
     }
 
-    public void leave(String authToken, int gameID) throws ServerException {
+    public void leave(String authToken, int gameID) throws SharedException {
         try{
             var command = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
             this.session.close();
         } catch (IOException e) {
-            throw new ServerException(e.getMessage(),500);
+            throw new SharedException(e.getMessage(),500);
         }
     }
 
-    public void makeMove(String authToken, int gameID, ChessMove move) throws ServerException {
+    public void makeMove(String authToken, int gameID, ChessMove move) throws SharedException {
         try{
             var command = new UserGameCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, move);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException e) {
-            throw new ServerException(e.getMessage(), 500);
+            throw new SharedException(e.getMessage(), 500);
         }
     }
 
-    public void resign(String authToken, int gameID) throws ServerException {
+    public void resign(String authToken, int gameID) throws SharedException {
         try{
             var command = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
         } catch (IOException e) {
-            throw new ServerException(e.getMessage(), 500);
+            throw new SharedException(e.getMessage(), 500);
         }
     }
 

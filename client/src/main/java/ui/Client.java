@@ -1,8 +1,8 @@
 package ui;
 import chess.*;
 import model.*;
-import server.ServerException;
 import server.ServerFacade;
+import server.SharedException;
 import ui.websocket.NotificationHandler;
 import ui.websocket.WebSocketFacade;
 import static ui.EscapeSequences.*;
@@ -49,7 +49,7 @@ public class Client {
             return ex.getMessage();
         }
     }
-    private String signedOutClient(String cmd, String... params) throws ServerException {
+    private String signedOutClient(String cmd, String... params) throws SharedException {
         return switch (cmd) {
             case "register" -> register(params);
             case "login" -> login(params);
@@ -68,7 +68,7 @@ public class Client {
                 EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
                 EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA);
     }
-    private String register(String... params) throws ServerException {
+    private String register(String... params) throws SharedException {
         if (params.length == 3){
             RegisterRequest register = new RegisterRequest(params[0], params[1], params[2]);
             var user = server.register(register);
@@ -77,9 +77,9 @@ public class Client {
             state = State.SIGNEDIN;
 
             return String.format("Registered as %s.", user.username());
-        } throw new ServerException("Error: Bad request", 400);
+        } throw new SharedException("Error: Bad request", 400);
     }
-    private String login(String... params) throws ServerException{
+    private String login(String... params) throws SharedException{
         if (params.length == 2){
             LoginRequest login = new LoginRequest(params[0], params[1]);
             var user = server.login(login);
@@ -90,9 +90,9 @@ public class Client {
             list();
 
             return String.format("Logged in as %s.", user.username());
-        } throw new ServerException("Error: Bad request", 400);
+        } throw new SharedException("Error: Bad request", 400);
     }
-    private String signedInClient(String cmd, String... params) throws ServerException{
+    private String signedInClient(String cmd, String... params) throws SharedException{
         return switch (cmd) {
             case "logout" -> logout();
             case "create" -> create(params);
@@ -120,7 +120,7 @@ public class Client {
                 EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
                 EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA);
     }
-    private String create(String... params) throws ServerException {
+    private String create(String... params) throws SharedException {
         if (params.length >= 1){
             CreateRequest create = new CreateRequest(params[0]);
             server.createGame(create, authToken);
@@ -128,9 +128,9 @@ public class Client {
             list();
 
             return String.format("Created game called %s", params[0]);
-        } throw new ServerException("Error: Bad request", 400);
+        } throw new SharedException("Error: Bad request", 400);
     }
-    private String list() throws ServerException {
+    private String list() throws SharedException {
         games.clear();
         var result = server.listGames(authToken);
         var gameList = result.games();
@@ -152,19 +152,19 @@ public class Client {
 
         return output.toString();
     }
-    private String join(String... params) throws ServerException {
+    private String join(String... params) throws SharedException {
         if (params.length == 2){
             int id;
             try{
                 id = Integer.parseInt(params[0]);
             } catch (Exception e){
-                throw new ServerException("Error: Bad request", 400);
+                throw new SharedException("Error: Bad request", 400);
             }
             int gameID;
             try {
                 gameID = games.get(id).gameID();
             } catch (Exception e){
-                throw new ServerException("Error: No such game", 400);
+                throw new SharedException("Error: No such game", 400);
             }
             JoinRequest join = new JoinRequest(params[1].toUpperCase(), gameID);
             server.joinGame(join, authToken);
@@ -176,15 +176,15 @@ public class Client {
             currentGameID = gameID;
 
             return "Joined game as " + color;
-        } throw new ServerException("Error: Bad request", 400);
+        } throw new SharedException("Error: Bad request", 400);
     }
-    private String observe(String... params) throws ServerException {
+    private String observe(String... params) throws SharedException {
         if (params.length == 1){
             int id;
             try{
                 id = Integer.parseInt(params[0]);
             } catch (Exception e){
-                throw new ServerException("Error: Bad request", 400);
+                throw new SharedException("Error: Bad request", 400);
             }
             int gameID = games.get(id).gameID();
 
@@ -198,9 +198,9 @@ public class Client {
             return "Joined game as an observer";
 
 
-        } throw new ServerException("Error: Bad request", 400);
+        } throw new SharedException("Error: Bad request", 400);
     }
-    private String logout() throws ServerException {
+    private String logout() throws SharedException {
         server.logout(authToken);
         authToken = "";
         state = State.SIGNEDOUT;
@@ -208,7 +208,7 @@ public class Client {
         return "Logged out";
 
     }
-    private String logoutAndQuit() throws ServerException{
+    private String logoutAndQuit() throws SharedException{
         server.logout(authToken);
         authToken = "";
         state = State.SIGNEDOUT;
@@ -217,7 +217,7 @@ public class Client {
     }
 
 
-    private String gamingClient(String cmd, String... params) throws ServerException {
+    private String gamingClient(String cmd, String... params) throws SharedException {
         return switch (cmd) {
             case "redraw" -> printBoard(null);
             case "leave" -> leaveGame();
@@ -242,7 +242,7 @@ public class Client {
                 EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA,
                 EscapeSequences.SET_TEXT_COLOR_GREEN, EscapeSequences.SET_TEXT_COLOR_MAGENTA);
     }
-    private String leaveGame() throws ServerException {
+    private String leaveGame() throws SharedException {
         ws.leave(authToken, currentGameID);
         ws = null;
         currentGameID = -1;
@@ -250,24 +250,24 @@ public class Client {
         game = null;
         return "Left game";
     }
-    private String makeMove(String... params) throws ServerException {
+    private String makeMove(String... params) throws SharedException {
         if(game.getState() == GameStatus.OVER){
             return "Game has ended. No more moves allowed";
         }
         if(!game.getTeamTurn().toString().toLowerCase().equals(color)){
-            throw new ServerException("Error: Bad request, not your turn", 400);
+            throw new SharedException("Error: Bad request, not your turn", 400);
         }
         if (authToken.isEmpty() || currentGameID < 0){
-            throw new ServerException("ERROR: Bad Request, no game id or authdata", 400);
+            throw new SharedException("ERROR: Bad Request, no game id or authdata", 400);
         }
 
 
         if(params.length != 2 ){
-            throw new ServerException("Error: bad request", 400);
+            throw new SharedException("Error: bad request", 400);
         }
 
         if(params[0].length() != 2 || params[1].length() != 2){
-            throw new ServerException("Error: bad request, enter <COLUMN LETTER><ROW NUMBER>", 400);
+            throw new SharedException("Error: bad request, enter <COLUMN LETTER><ROW NUMBER>", 400);
         }
         String start = params[0];
         String end = params[1];
@@ -283,21 +283,21 @@ public class Client {
         state = State.RESIGN;
         return "This action will result in forfeit of the game. Are you sure? [yes|no]";
     }
-    private String highlightMoves(String... params) throws ServerException {
+    private String highlightMoves(String... params) throws SharedException {
         if (params.length != 1){
-            throw new ServerException("Error: bad request", 400);
+            throw new SharedException("Error: bad request", 400);
         }
         ChessPosition position = toPosition(params[0]);
         return printBoard(position);
     }
-    private String resignPrompt(String cmd) throws ServerException {
+    private String resignPrompt(String cmd) throws SharedException {
         return switch(cmd){
             case "yes" -> forfeitGame();
             case "no" -> noForfeit();
             default -> "This action will result in forfeit of the game. Are you sure? [yes|no]";
         };
     }
-    private String forfeitGame() throws ServerException {
+    private String forfeitGame() throws SharedException {
         ws.resign(authToken, currentGameID);
         state = State.GAMING;
         return "Resigned from the game";
@@ -307,7 +307,7 @@ public class Client {
         return "Continue playing.";
     }
 
-    private String observingClient(String cmd) throws ServerException {
+    private String observingClient(String cmd) throws SharedException {
         if(cmd.equals("leave")){
             return leaveGame();
         } else {
