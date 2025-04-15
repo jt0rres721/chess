@@ -187,17 +187,12 @@ public class Client {
                 throw new SharedException("Error: Bad request", 400);
             }
             int gameID = games.get(id).gameID();
-
             ws = new WebSocketFacade(serverUrl, notificationHandler);
             ws.connect(authToken, gameID);
             color = "observer";
             currentGameID = gameID;
-
             state = State.OBSERVING;
-
             return "Joined game as an observer";
-
-
         } throw new SharedException("Error: Bad request", 400);
     }
     private String logout() throws SharedException {
@@ -215,8 +210,6 @@ public class Client {
 
         return "quit";
     }
-
-
     private String gamingClient(String cmd, String... params) throws SharedException {
         return switch (cmd) {
             case "redraw" -> printBoard(null);
@@ -231,7 +224,7 @@ public class Client {
         return String.format("""
                 %s- redraw %s - to redraw the board
                 %s- leave %s - to leave the game
-                %s- move <START POSITION> <END POSITION> %s - to make a move  (i.e. a1 a2)
+                %s- move <START POSITION> <END POSITION> <PROMOTION PIECE>(Optional) %s - to make a move  (i.e. a1 a2)
                 %s- resign %s -  to forfeit the game
                 %s- highlight <POSITION> %s - to highlight the moves of a piece
                 %s- help %s - to display possible commands
@@ -260,24 +253,35 @@ public class Client {
         if (authToken.isEmpty() || currentGameID < 0){
             throw new SharedException("ERROR: Bad Request, no game id or authdata", 400);
         }
-
-
-        if(params.length != 2 ){
+        if(params.length < 2 ){
             throw new SharedException("Error: bad request", 400);
         }
-
         if(params[0].length() != 2 || params[1].length() != 2){
             throw new SharedException("Error: bad request, enter <COLUMN LETTER><ROW NUMBER>", 400);
         }
         String start = params[0];
         String end = params[1];
-
         ChessPosition startPos = toPosition(start);
         ChessPosition endPos = toPosition(end);
-
-        ChessMove move = new ChessMove(startPos, endPos, null);
+        ChessMove move;
+        if(params.length == 3){
+            ChessPiece.PieceType promo = assignPiece(params[2]);
+            move = new ChessMove(startPos, endPos, promo);
+        }else{
+            move = new ChessMove(startPos, endPos, null);
+        }
         ws.makeMove(authToken, currentGameID, move);
         return "Made move from " + start +" to " + end;
+    }
+    private ChessPiece.PieceType assignPiece(String piece) throws SharedException {
+        piece = piece.toLowerCase();
+        return switch(piece){
+            case "knight" -> ChessPiece.PieceType.KNIGHT;
+            case "bishop" -> ChessPiece.PieceType.BISHOP;
+            case "queen" -> ChessPiece.PieceType.QUEEN;
+            case "rook" -> ChessPiece.PieceType.ROOK;
+            default -> throw new SharedException("Error: Bad request, enter piecetype",400);
+        };
     }
     private String resign(){
         state = State.RESIGN;
@@ -306,7 +310,6 @@ public class Client {
         state = State.GAMING;
         return "Continue playing.";
     }
-
     private String observingClient(String cmd) throws SharedException {
         if(cmd.equals("leave")){
             return leaveGame();
@@ -325,7 +328,6 @@ public class Client {
     public void addGame(ChessGame game){
         this.game = game;
     }
-
     public String printBoard(ChessPosition highlight){
         if (game == null){
             return "No game";
@@ -356,13 +358,11 @@ public class Client {
         output.append(RESET_BG_COLOR);
         return output.toString();
     }
-
     private String printWhite(boolean highlighting, Collection<ChessPosition> lightEndPositions){
         StringBuilder output = new StringBuilder();
         ChessBoard board = game.getBoard();
         output.append(SET_TEXT_COLOR_BLACK);
         output.append(printHeader(color));
-
         boolean lightSquare = false;
         for (int i = 0; i < 8; i++) {
             output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", 8 - i));
@@ -417,7 +417,6 @@ public class Client {
         output.append(printHeader(color));
         return output.toString();
     }
-
     private String printSquare(int row, int col, boolean highlight){
         String square;
         if (row % 2 == 0){
@@ -463,7 +462,6 @@ public class Client {
         }
         return square;
     }
-
     private String printHeader(String color){
         StringBuilder output = new StringBuilder();
         if (color.equals("white")){
