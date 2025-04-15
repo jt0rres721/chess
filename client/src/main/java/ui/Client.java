@@ -42,7 +42,7 @@ public class Client {
                 case SIGNEDOUT -> signedOutClient(cmd, params);
                 case SIGNEDIN -> signedInClient(cmd, params);
                 case GAMING -> gamingClient(cmd, params);
-                case RESIGN -> resignPrompt(cmd, params);
+                case RESIGN -> resignPrompt(cmd);
                 case OBSERVING -> observingClient(cmd);
             };
         }catch (Exception ex){
@@ -190,7 +190,6 @@ public class Client {
 
             ws = new WebSocketFacade(serverUrl, notificationHandler);
             ws.connect(authToken, gameID);
-            state = State.GAMING;
             color = "observer";
             currentGameID = gameID;
 
@@ -291,7 +290,7 @@ public class Client {
         ChessPosition position = toPosition(params[0]);
         return printBoard(position);
     }
-    private String resignPrompt(String cmd, String... params) throws ServerException {
+    private String resignPrompt(String cmd) throws ServerException {
         return switch(cmd){
             case "yes" -> forfeitGame();
             case "no" -> noForfeit();
@@ -351,65 +350,82 @@ public class Client {
             }
         }
 
-        boolean lightSquare = false;
+
         StringBuilder output = new StringBuilder();
         if (color.equals( "white") || color.equals("observer")) {
-            output.append(SET_TEXT_COLOR_BLACK);
-            output.append(printHeader(color));
-
-            for (int i = 0; i < 8; i++) {
-                output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", 8 - i));
-                for (int j = 0; j < 8; j++) {
-                    ChessPosition position = new ChessPosition(8-i,j+1);
-                    ChessPiece piece = board.getPiece(position);
-
-                    if (highlighting){
-                        if (lightEndPositions.contains(position)){
-                            lightSquare = true;
-                        }
-                    }
-
-                    if (piece == null){
-                        output.append(printSquare(8-i, j+1, lightSquare));
-                    } else {
-                        output.append(printPiece(piece, 8 - i, j + 1, lightSquare));
-                    }
-                    lightSquare = false;
-                }
-                output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", 8 - i));
-                output.append(RESET_BG_COLOR + "\n");
+            output.append(printWhite(highlighting, lightEndPositions));
+            } else {
+            output.append(printBlack(highlighting, lightEndPositions));
             }
-            output.append(printHeader(color));
-
-        } else {
-            output.append(SET_TEXT_COLOR_BLACK);
-            output.append(printHeader(color));
-
-            for (int i = 0; i < 8; i++) {
-                output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", i + 1));
-                for (int j = 0; j < 8; j++) {
-                    ChessPosition position = new ChessPosition(i+1,8-j);
-                    ChessPiece piece = board.getPiece(position);
-
-                    if (highlighting){
-                        if (lightEndPositions.contains(position)){
-                            lightSquare = true;
-                        }
-                    }
-                    if (piece == null){
-                        output.append(printSquare(i+1, 8-j, lightSquare));
-                    } else {
-                        output.append(printPiece(piece, i+1, 8-j, lightSquare));
-                    }
-                    lightSquare = false;
-                }
-                output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", i + 1));
-                output.append(RESET_BG_COLOR + "\n");
-            }
-            output.append(SET_TEXT_COLOR_BLACK);
-            output.append(printHeader(color));
-        }
         output.append(RESET_BG_COLOR);
+        return output.toString();
+    }
+
+    private String printWhite(boolean highlighting, Collection<ChessPosition> lightEndPositions){
+        StringBuilder output = new StringBuilder();
+        ChessBoard board = game.getBoard();
+        output.append(SET_TEXT_COLOR_BLACK);
+        output.append(printHeader(color));
+
+        boolean lightSquare = false;
+
+        for (int i = 0; i < 8; i++) {
+            output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", 8 - i));
+            for (int j = 0; j < 8; j++) {
+                ChessPosition position = new ChessPosition(8-i,j+1);
+                ChessPiece piece = board.getPiece(position);
+
+                if (highlighting){
+                    if (lightEndPositions.contains(position)){
+                        lightSquare = true;
+                    }
+                }
+
+                if (piece == null){
+                    output.append(printSquare(8-i, j+1, lightSquare));
+                } else {
+                    output.append(printPiece(piece, 8 - i, j + 1, lightSquare));
+                }
+                lightSquare = false;
+            }
+            output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", 8 - i));
+            output.append(RESET_BG_COLOR + "\n");
+        }
+        output.append(printHeader(color));
+        return output.toString();
+    }
+
+    private String printBlack(boolean highlighting, Collection<ChessPosition> lightEndPositions){
+        StringBuilder output = new StringBuilder();
+        ChessBoard board = game.getBoard();
+        output.append(SET_TEXT_COLOR_BLACK);
+        output.append(printHeader(color));
+
+        boolean lightSquare = false;
+        for (int i = 0; i < 8; i++) {
+            output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", i + 1));
+            for (int j = 0; j < 8; j++) {
+                ChessPosition position = new ChessPosition(i+1,8-j);
+                ChessPiece piece = board.getPiece(position);
+
+                if (highlighting){
+                    if (lightEndPositions.contains(position)){
+                        lightSquare = true;
+                    }
+                }
+                if (piece == null){
+                    output.append(printSquare(i+1, 8-j, lightSquare));
+                } else {
+                    output.append(printPiece(piece, i+1, 8-j, lightSquare));
+                }
+                lightSquare = false;
+            }
+            output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", i + 1));
+            output.append(RESET_BG_COLOR + "\n");
+        }
+        output.append(SET_TEXT_COLOR_BLACK);
+        output.append(printHeader(color));
+
         return output.toString();
     }
 
