@@ -1,10 +1,7 @@
 package server.websocket;
 
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPosition;
-import chess.GameStatus;
+import chess.*;
 import com.google.gson.Gson;
 import dataaccess.ServerException;
 import org.eclipse.jetty.websocket.api.Session;
@@ -16,6 +13,7 @@ import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @WebSocket
 public class WebSocketHandler {
@@ -44,10 +42,12 @@ public class WebSocketHandler {
                 case MAKE_MOVE -> makeMove(username, command);
             }
         } catch (UnauthorizedException ex){
-            ServerMessage error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Error: unauthorized");
+            ServerMessage error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, null);
+            error.setErrorMessage( "Error: unauthorized");
             manager.send(session, error);
         } catch (Exception ex){
-            ServerMessage error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage());
+            ServerMessage error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, null);
+            error.setErrorMessage(ex.getMessage());
             manager.send(session, error);
         }
     }
@@ -85,7 +85,8 @@ public class WebSocketHandler {
         var message = String.format("%s joined the game as %s", username, playerType);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         var game = new Gson().toJson(gameService.getChess(gameID));
-        var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
+        ServerMessage loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null);
+        loadGame.setGame(game);
         manager.broadcast(username, notification);
         manager.sendUser(username, loadGame);
     }
@@ -93,13 +94,25 @@ public class WebSocketHandler {
     private void makeMove(String username, UserGameCommand command) throws IOException, ServerException {
         int gameID = command.getGameID();
         ChessMove move = command.getMove();
+        var info = gameService.getGame(gameID);
+        ChessBoard brr = gameService.getChess(gameID).getBoard();
+
+        if(Objects.equals(username, info.whiteUsername()) && brr.getPiece(move.getStartPosition()).getTeamColor() ==
+                ChessGame.TeamColor.BLACK){
+            throw new ServerException("Error: Not your turn", 400);
+        }
+        if(Objects.equals(username, info.blackUsername()) && brr.getPiece(move.getStartPosition()).getTeamColor() ==
+                ChessGame.TeamColor.WHITE){
+            throw new ServerException("Error: Not your turn", 400);
+        }
 
         gameService.makeMove(move, gameID);
 
         var game = gameService.getChess(gameID);
 
         var load = new Gson().toJson(game);
-        var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, load);
+        ServerMessage loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null);
+        loadGame.setGame(load);
         manager.broadcast(null, loadGame);
 
         String start = toChessPosition(move.getStartPosition());
