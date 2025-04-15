@@ -22,7 +22,6 @@ public class Client {
     private String color;
     private String authToken;
     private ChessGame game;
-    private boolean resigning;
 
     public Client(String serverUrl, NotificationHandler notificationHandler){
         this.notificationHandler = notificationHandler;
@@ -33,7 +32,6 @@ public class Client {
         authToken = "";
         currentGameID = -1;
         game = null;
-        resigning = false;
     }
     public String eval(String input){
         try{
@@ -193,7 +191,7 @@ public class Client {
             ws.connect(authToken, gameID);
             color = "observer";
             currentGameID = gameID;
-            state = State.OBSERVING ;
+            state = State.OBSERVING;
             return "Joined game as an observer";
         } throw new SharedException("Error: Bad request", 400);
     }
@@ -213,22 +211,14 @@ public class Client {
         return "quit";
     }
     private String gamingClient(String cmd, String... params) throws SharedException {
-        if(resigning){
-            return switch(cmd){
-                case "yes" -> forfeitGame();
-                case "no" -> noForfeit();
-                default -> "Resign? Enter [yes|no]";
-            };
-        } else{
-            return switch (cmd) {
-                case "redraw" -> printBoard(null);
-                case "leave" -> leaveGame();
-                case "move" -> makeMove(params);
-                case "resign" -> resign();
-                case "highlight" -> highlightMoves(params);
-                default -> helpG();
-            };
-        }
+        return switch (cmd) {
+            case "redraw" -> printBoard(null);
+            case "leave" -> leaveGame();
+            case "move" -> makeMove(params);
+            case "resign" -> resign();
+            case "highlight" -> highlightMoves(params);
+            default -> helpG();
+        };
     }
     public String helpG() {
         return String.format("""
@@ -290,12 +280,9 @@ public class Client {
             default -> throw new SharedException("Error: Bad request, enter piecetype",400);
         };
     }
-    private String resign() throws SharedException {
-        ws.resign(authToken, currentGameID);
-        if(state == State.GAMING && game.getState() != GameStatus.OVER){
-            resigning = true;
-        }
-        return "";
+    private String resign(){
+        state = State.RESIGN;
+        return "This action will result in forfeit of the game. Are you sure? [yes|no]";
     }
     private String highlightMoves(String... params) throws SharedException {
         if (params.length != 1){
@@ -312,18 +299,13 @@ public class Client {
         };
     }
     private String forfeitGame() throws SharedException {
-        if (resigning){
-            ws.resign(authToken, currentGameID);
-            resigning = false;
-        }
-        return "";
+        ws.resign(authToken, currentGameID);
+        state = State.GAMING;
+        return "Resigned from the game";
     }
-    private String noForfeit() throws SharedException {
-        if (resigning){
-            ws.cancel(authToken, currentGameID);
-            resigning = false;
-        }
-        return "";
+    private String noForfeit(){
+        state = State.GAMING;
+        return "Continue playing.";
     }
     private String observingClient(String cmd, String... params) throws SharedException {
         return switch (cmd) {
@@ -370,7 +352,6 @@ public class Client {
         }
         StringBuilder output = new StringBuilder();
         if (color.equals( "white") || color.equals("observer")) {
-            System.out.println("Printing color equals " + color);
             output.append(printWhite(highlighting, lightEndPositions));
             } else {
             output.append(printBlack(highlighting, lightEndPositions));
