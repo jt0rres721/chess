@@ -37,7 +37,7 @@ public class UserGameCommand {
         CONNECT,
         MAKE_MOVE,
         LEAVE,
-        CANCEL, RESIGN
+        RESIGN
     }
 
     public CommandType getCommandType() {

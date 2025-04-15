@@ -20,13 +20,11 @@ public class WebSocketHandler {
     private final ConnectionManager manager = new ConnectionManager();
     private final UserService userService;
     private final GameService gameService;
-    private boolean resign;
 
 
     public WebSocketHandler(UserService userService, GameService gameService) {
         this.userService = userService;
         this.gameService = gameService;
-        resign = false;
     }
 
     @OnWebSocketMessage
@@ -42,7 +40,6 @@ public class WebSocketHandler {
                 case LEAVE -> leaveGame(username, command);
                 case RESIGN -> resign(session, username, command);
                 case MAKE_MOVE -> makeMove(username, command);
-                case CANCEL -> cancelResign();
             }
         } catch (UnauthorizedException ex){
             ServerMessage error = new ServerMessage(ServerMessage.ServerMessageType.ERROR, null);
@@ -53,9 +50,6 @@ public class WebSocketHandler {
             error.setErrorMessage(ex.getMessage());
             manager.send(session, error);
         }
-    }
-    private void cancelResign(){
-        resign = false;
     }
 
     private String getUsername(String authToken){
@@ -192,27 +186,18 @@ public class WebSocketHandler {
             throw new ServerException("Error: Not a playing user", 400);
         }
 
-        if(resign){
-            gameService.endGame(gameID);
+        gameService.endGame(gameID);
 
-            var load = new Gson().toJson(gameService.getChess(gameID));
-            var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, load);
-            manager.broadcast(username, loadGame, gameID);
+        var load = new Gson().toJson(gameService.getChess(gameID));
+        var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, load);
+        manager.broadcast(username, loadGame, gameID);
 
-            manager.send(session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
-                    "You have resigned from the game"));
+        manager.send(session, new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION,
+                "You have resigned from the game"));
 
-            var message = username + " resigned from the game";
-            var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-            manager.broadcast(username, notification, gameID);
-            resign = false;
-
-        } else {
-            var message = "This action will result in forfeit of the game. Are you sure? [yes|no]";
-            var msg = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-            manager.send(session, msg);
-            resign = true;
-        }
+        var message = username + " resigned from the game";
+        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        manager.broadcast(username, notification, gameID);
     }
 
 }
