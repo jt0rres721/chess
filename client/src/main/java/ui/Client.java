@@ -363,7 +363,7 @@ public class Client {
         StringBuilder output = new StringBuilder();
         ChessBoard board = game.getBoard();
         output.append(SET_TEXT_COLOR_BLACK);
-        output.append(printHeader(color));
+        output.append(printHeader("white"));
         boolean lightSquare = false;
         for (int i = 0; i < 8; i++) {
             output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", 8 - i));
@@ -385,7 +385,7 @@ public class Client {
             output.append(SET_BG_COLOR_LIGHT_GREY).append(String.format(" %d ", 8 - i));
             output.append(RESET_BG_COLOR + "\n");
         }
-        output.append(printHeader(color));
+        output.append(printHeader("white"));
         return output.toString();
     }
     private String printBlack(boolean highlighting, Collection<ChessPosition> lightEndPositions){
